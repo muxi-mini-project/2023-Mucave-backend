@@ -3,20 +3,44 @@ package post
 import (
 	"Mucave/handler"
 	"Mucave/model"
+	qiniu "Mucave/pkg"
 	"Mucave/service"
 	"github.com/gin-gonic/gin"
-	"os"
 	"strconv"
 )
 
+// @Summary 最新的帖子
+// @Description  查询最新发布的帖子，返回的开始点和数量由query参数决定
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  start  query integer true "开始点"
+// @Param  length query integer true "需要返回的帖子数量"
+// @Success 200 {object} handler.Response "{"msg":"查询到最新的帖子（数组）"}"
+// @Failure 410 {object} handler.Error  "{"msg":"最新帖子查询失败"}"
+// @Router /post/latest [GET]
 func Latest(c *gin.Context) {
 	posts, err := model.QueryNewPosts(c.Query("start"), c.Query("length"))
 	if err != nil {
 		handler.SendError(c, 410, "最新的帖子查询失败.")
 		return
 	}
-	handler.SendResponse(c, "查询到最新帖子数组.", posts)
+	handler.SendResponse(c, "查询到最新帖子（数组）.", posts)
 }
+
+// @Summary 推荐的帖子
+// @Description  查询点赞最多的帖子，返回的开始点和数量由query参数决定，类型有type参数决定
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  type  path string true "帖子类型"
+// @Param  start  query integer true "开始点"
+// @Param  length query integer true "需要返回的帖子数量"
+// @Success 200 {object} handler.Response "{"msg":"查询到推荐的帖子（数组）"}"
+// @Failure 410 {object} handler.Error  "{"msg":"推荐帖子查询失败"}"
+// @Router /post/recommendations/{type} [GET]
 func Recommendations(c *gin.Context) {
 	ty := c.Param("type")
 	posts, err := model.QueryHotPosts(c.Query("start"), c.Query("length"), ty)
@@ -24,14 +48,21 @@ func Recommendations(c *gin.Context) {
 		handler.SendError(c, 410, "推荐帖子查询失败.")
 		return
 	}
-	handler.SendResponse(c, "查询到点赞多的的帖子数组", posts)
+	handler.SendResponse(c, "查询到点赞多的的帖子组", posts)
 }
+
+// @Summary 关注用户帖子
+// @Description  查询关注用户的帖子（所有）
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到关注的用户的帖子的数组"}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询关注的用户失败."}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询关注用户的帖子失败."}"
+// @Router /post/following [GET]
 func Following(c *gin.Context) {
-	UserId, ok := c.Get("UserId")
-	if !ok {
-		c.JSON(500, gin.H{"message": "无法识别用户身份信息"})
-		return
-	}
+	UserId, _ := c.Get("UserId")
 	users, err := model.QueryFollowing(UserId)
 	if err != nil {
 		handler.SendError(c, 410, "查询关注的用户失败.")
@@ -44,6 +75,17 @@ func Following(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到关注的用户的帖子的数组", posts)
 }
+
+// @Summary 查某个帖子
+// @Description  通过帖子的id获得某个帖子的详细信息
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id path integer true "指定帖子的id"
+// @Success 200 {object} handler.Response "{"msg":"查询到指定的帖子"}"
+// @Failure 410 {object} handler.Error  "{"msg":"指定的帖子查询失败."}"
+// @Router /post/{id} [GET]
 func QueryOnePosts(c *gin.Context) {
 	id := c.Param("id")
 	post, err := model.QueryIdPost(id)
@@ -53,17 +95,39 @@ func QueryOnePosts(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到指定的帖子", post)
 }
+
+// @Summary 帖子的评论
+// @Description 根据帖子的id查询指定帖子的所有评论(不包括评论的回复)
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  post_id  path integer true "指定帖子的id"
+// @Success 200 {object} handler.Response "{"msg":"查询到帖子的评论."}"
+// @Failure 410 {object} handler.Error  "{"msg":"帖子的评论查询失败."}"
+// @Router /post/comments/{post_id} [GET]
 func Comments(c *gin.Context) {
-	postId := c.Param("postId")
+	postId := c.Param("post_id")
 	comments, err := model.QueryCommentByPostId(postId)
 	if err != nil {
 		handler.SendError(c, 410, "帖子的评论查询失败.")
 		return
 	}
-	handler.SendResponse(c, "查询到帖子的评论", comments)
+	handler.SendResponse(c, "查询到帖子的评论.", comments)
 }
+
+// @Summary 评论的回复
+// @Description 根据评论的id查询指定评论的所有回复
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  comment_id  path integer true "指定评论的id"
+// @Success 200 {object} handler.Response "{"msg":"查询到评论的回复"}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询评论的回复失败."}"
+// @Router /post/comment_replies/{comment_id} [GET]
 func Reply(c *gin.Context) {
-	commentId := c.Param("commentId")
+	commentId := c.Param("comment_id")
 	replies, err := model.QueryReplyByCommentId(commentId)
 	if err != nil {
 		handler.SendError(c, 410, "查询评论的回复失败.")
@@ -71,35 +135,62 @@ func Reply(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到评论的回复", replies)
 }
+
+// @Summary 发布帖子
+// @Description 上传帖子的各项信息，发布帖子
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param type  formData string true "类型"
+// @Param title  formData string true "标题"
+// @Param content  formData string true "文本内容"
+// @Param file  formData file false "文件组(有数量限制)"
+// @Param file  query string true "yse/no(说明是否上传了文件)"
+// @Success 200 {object} handler.Response "{"msg":"发布成功"}"
+// @Failure 400 {object} handler.Error  "{"msg":"新建帖子失败"}"
+// @Router /post [POST]
 func CreatePost(c *gin.Context) {
 	post := model.Post{
 		AuthorId:  service.GetId(c),
+		Title:     c.PostForm("title"),
 		Type:      c.PostForm("type"),
 		Content:   c.PostForm("content"),
 		Likes:     0,
 		CommentNo: 0,
 	}
-	post, err := model.CreatePost(post)
+	if c.Query("file") == "yes" {
+		urls, _ := qiniu.UploadFile(c)
+		for len(urls) < 4 {
+			urls = append(urls, "")
+		}
+		post.FilePath1 = urls[0]
+		post.FilePath2 = urls[1]
+		post.FilePath3 = urls[2]
+		post.FilePath4 = urls[3]
+	}
+	err := model.CreatePost(post)
 	if err != nil {
 		handler.SendError(c, 400, "新建帖子失败.")
 		return
 	}
-	DirPath := service.UploadFile(c, post.ID)
-	files, _ := os.ReadDir(DirPath)
-	paths := make([]string, 4, 4)
-	for i, file := range files {
-		FilePath := DirPath + "/" + file.Name()
-		paths[i] = FilePath
-	}
-	post.FilePath1 = paths[0]
-	post.FilePath2 = paths[1]
-	post.FilePath3 = paths[2]
-	post.FilePath4 = paths[3]
-	model.DB.Save(&post)
 	handler.SendResponse(c, "发布成功", gin.H{"data": "null"})
 }
+
+// @Summary 回复
+// @Description 给指定评论添加回复
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  comment_id  query integer true "评论的id"
+// @Param  object  formData integer true "回复对象的id"
+// @Param  content  formData string true "回复的内容"
+// @Success 200 {object} handler.Response "{"msg":"回复成功"}"
+// @Failure 400 {object} handler.Error  "{"msg":"回复失败"}"
+// @Router /post/comment_replies [POST]
 func AddReply(c *gin.Context) {
-	commentId, _ := strconv.Atoi(c.Param("commentId"))
+	commentId, _ := strconv.Atoi(c.Query("comment_id"))
 	object, _ := strconv.Atoi(c.PostForm("object"))
 	reply := model.Reply{
 		FromWho:   service.GetId(c),
@@ -114,8 +205,20 @@ func AddReply(c *gin.Context) {
 	}
 	handler.SendResponse(c, "回复成功.", nil)
 }
+
+// @Summary 评论
+// @Description 评论指定的帖子
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  post_id  query integer true "帖子id"
+// @Param  content  formData string true "评论的内容"
+// @Success 200 {object} handler.Response "{"msg":"评论成功."}"
+// @Failure 400 {object} handler.Error  "{"msg":"评论失败."}"
+// @Router /post/comments [POST]
 func AddComments(c *gin.Context) {
-	postId, _ := strconv.Atoi(c.Param("postId"))
+	postId, _ := strconv.Atoi(c.Query("post_id"))
 	comment := model.Comment{
 		PostId:  uint(postId),
 		UserId:  service.GetId(c),
@@ -128,8 +231,19 @@ func AddComments(c *gin.Context) {
 	}
 	handler.SendResponse(c, "评论成功.", nil)
 }
+
+// @Summary 点赞
+// @Description 点赞指定的帖子
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  post_id  query integer true "帖子id"
+// @Success 200 {object} handler.Response "{"msg":"点赞成功."}"
+// @Failure 400 {object} handler.Error  "{"msg":"点赞失败."}"
+// @Router /post/likes [POST]
 func AddLikes(c *gin.Context) {
-	postId, _ := strconv.Atoi(c.Param("postId"))
+	postId, _ := strconv.Atoi(c.Query("post_id"))
 	likes := model.Likes{
 		PostId: uint(postId),
 		UserId: service.GetId(c),
@@ -140,4 +254,133 @@ func AddLikes(c *gin.Context) {
 		return
 	}
 	handler.SendResponse(c, "点赞成功", nil)
+}
+
+// @Summary  是否已赞
+// @Description 通过帖子id查询是否已经点赞
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param post_id  query integer true "帖子id"
+// @Success 200 {object} handler.Response "{"msg":"no"}"
+// @Success 200 {object} handler.Response "{"msg":"yes"}"
+// @Router /post/whether_like [GET]
+func WhetherLike(c *gin.Context) {
+	id, _ := c.Get("UserId")
+	err := model.WhetherLike(id, c.Query("post_id"))
+	if err != nil {
+		handler.SendResponse(c, "no", nil)
+		return
+	}
+	handler.SendResponse(c, "yes", nil)
+}
+
+// @Summary 取消点赞
+// @Description  通过帖子id取消点赞
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  post_id  query integer true "帖子id"
+// @Success 200 {object} handler.Response "{"msg":"取消点赞成功"}"
+// @Failure 400 {object} handler.Error  "{"msg":"取消点赞失败"}"
+// @Router /post/likes [DELETE]
+func DeleteLikes(c *gin.Context) {
+	err := model.DeleteLikes(service.GetId(c), c.Query("post_id"))
+	if err != nil {
+		handler.SendError(c, 400, "取消点赞失败.")
+		return
+	}
+	handler.SendResponse(c, "取消点赞成功", nil)
+}
+
+// @Summary  修改帖子
+// @Description  上传所有内容然后修改所有内容,
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param type  formData string true "类型"
+// @Param post_id  query integer  true "帖子id"
+// @Param title  formData string true "标题"
+// @Param content  formData string true "文本内容"
+// @Param file  formData file false "新文件组(有数量限制)"
+// @Param file_path1  formData string true "文件地址1"
+// @Param file_path2  formData string true "文件地址2"
+// @Param file_path3  formData string true "文件地址3"
+// @Param file_path4  formData string true "文件地址4"
+// @Param file  query string true "yse/no(说明是否修改了文件)"
+// @Success 200 {object} handler.Response "{"msg":"修改帖子成功"}"
+// @Failure 400 {object} handler.Error  "{"msg":"修改帖子失败"}"
+// @Router /post [PUT]
+func UpdatePost(c *gin.Context) {
+	if !service.WhetherMyPost(service.GetId(c), c.Query("post_id")) {
+		handler.SendError(c, 401, "没有权限.")
+		return
+	}
+	var post model.Post
+	c.ShouldBind(&post)
+	postId, _ := strconv.Atoi(c.Query("post_id"))
+	post.ID = uint(postId)
+	if c.Query("file") == "yes" {
+		urls, _ := qiniu.UploadFile(c)
+		for len(urls) < 4 {
+			urls = append(urls, "")
+		}
+		post.FilePath1 = urls[0]
+		post.FilePath2 = urls[1]
+		post.FilePath3 = urls[2]
+		post.FilePath4 = urls[3]
+	}
+	err := model.UpdatePost(post)
+	if err != nil {
+		handler.SendError(c, 400, "修改帖子失败.")
+		return
+	}
+	handler.SendResponse(c, "修改帖子成功", nil)
+}
+
+// @Summary 删帖
+// @Description  根据post_id删除指定帖子
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param post_id query string true "帖子id"
+// @Success 200 {object} handler.Response "{"msg":"删帖成功."}"
+// @Failure 400 {object} handler.Error  "{"msg":"删帖失败."}"
+// @Router /post [DELETE]
+func DeletePost(c *gin.Context) {
+	if !service.WhetherMyPost(service.GetId(c), c.Query("post_id")) {
+		handler.SendError(c, 401, "没有权限.")
+		return
+	}
+	id := c.Query("post_id")
+	err := model.DeletePost(id)
+	if err != nil {
+		handler.SendError(c, 400, "删帖失败.")
+		return
+	}
+	handler.SendResponse(c, "删帖成功.", nil)
+}
+
+// @Summary  搜索帖子
+// @Description  通过关键词搜索标题有关键词的帖子
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  query_string  query string true "关键词"
+// @Success 200 {object} handler.Response "{"msg":"搜索成功."}"
+// @Failure 410 {object} handler.Error  "{"msg":"搜索失败."}"
+// @Router /search [GET]
+func SearchPosts(c *gin.Context) {
+	point := c.Query("query_string")
+	posts, err := model.SearchPosts(point)
+	if err != nil {
+		handler.SendError(c, 410, "搜索失败.")
+		return
+	}
+	handler.SendResponse(c, "搜索成功.", posts)
 }

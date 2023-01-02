@@ -14,10 +14,9 @@ func CreateUser(username string) User {
 	DB.Create(&user).Find(&user1)
 	return user1
 }
-func CreatePost(post Post) (Post, error) {
-	var post1 Post
-	err := DB.Create(&post).Find(&post1).Error
-	return post1, err
+func CreatePost(post Post) error {
+	err := DB.Create(&post).Error
+	return err
 }
 func CreateReply(reply Reply) error {
 	err := DB.Create(&reply).Error

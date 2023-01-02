@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh"
 	"net"
 )
@@ -20,8 +21,8 @@ func (s *ViaSSHDialer) Dial(context context.Context, addr string) (net.Conn, err
 }
 func InitDB() {
 	var u, p string
-	u = "账户"
-	p = "密码"
+	u = viper.GetString("db.username")
+	p = viper.GetString("db.password")
 	config := &ssh.ClientConfig{
 		User: u,
 		Auth: []ssh.AuthMethod{
@@ -29,7 +30,7 @@ func InitDB() {
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	client, _ := ssh.Dial("tcp", "43.138.61.49:22", config)
+	client, _ := ssh.Dial("tcp", viper.GetString("server_ip"), config)
 	mysql.RegisterDialContext("mysql+tcp", (&ViaSSHDialer{client}).Dial)
 	dsn := fmt.Sprintf("%v:%v@mysql+tcp(127.0.0.1:3306)/csc?charset=utf8&parseTime=True&loc=Local", u, p)
 	DB, _ = gorm.Open("mysql", dsn)

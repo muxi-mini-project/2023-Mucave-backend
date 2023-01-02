@@ -1,53 +1,61 @@
 package router
 
 import (
-	"Mucave/handler"
 	"Mucave/handler/Midware"
 	"Mucave/handler/post"
 	"Mucave/handler/user"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func Register(r *gin.Engine) {
-	r.POST("/login", user.Login) //登录 ok
+	r.NoRoute(func(c *gin.Context) {
+		c.String(http.StatusNotFound, "The incorrect API router.")
+	})
+	r.POST("/api/v1/login", user.Login) //登录 ok
 	u := r.Group("/api/v1/user")
 	u.Use(Midware.TokenMiddleWare)
 	{
-		u.GET("/getFile", handler.GetFiles)            //获取文件 ok
-		u.POST("/follower", user.Follow)               //关注  ok
-		u.DELETE("/follower", user.UnFollow)           //取关  ok
-		u.GET("/privateMsg/:id", user.PrivateMsg)      //刷新某人的来信  ok
-		u.POST("/privateMsg/:id", user.PrivateMsgSend) //给某人发信息   ok
-		u.PUT("/myMsg", user.MyMsgUpdate)              //更新我的资料  ok
+		//u.GET("/getFile", handler.GetFiles)            //获取文件 ok
+		u.POST("/following", user.Follow)               //关注  ok
+		u.DELETE("/following", user.UnFollow)           //取关  ok
+		u.GET("/private_msg/:id", user.PrivateMsg)      //刷新某人的来信  ok
+		u.POST("/private_msg/:id", user.PrivateMsgSend) //给某人发信息   ok
+		u.PUT("/my_msg", user.MyMsgUpdate)              //更新我的资料  ok
 
-		u.GET("/myOutline", user.Outline)     //我的大致信息 ok
-		u.GET("/myPost", user.MyPost)         //我的帖子 ok
-		u.GET("/following", user.Following)   //我的关注  ok
-		u.GET("/followers", user.Followers)   //我的粉丝  ok
-		u.GET("/myMsg", user.MyMsg)           //我的详细信息，在编辑页面  ok
-		u.GET("/myReplies", user.MyReplies)   //我的回复 ok
-		u.GET("/myComments", user.MyComments) //我的评论 ok
-		u.GET("/myLikes", user.MyLikesPost)   //我的点赞  ok
+		u.GET("/my_outline", user.Outline)     //我的大致信息 ok
+		u.GET("/my_post", user.MyPost)         //我的帖子 ok
+		u.GET("/my_following", user.Following) //我的关注  ok
+		u.GET("/my_followers", user.Followers) //我的粉丝  ok
+		u.GET("/my_msg", user.MyMsg)           //我的详细信息，在编辑页面  ok
+		u.GET("/my_replies", user.MyReplies)   //我的回复 ok
+		u.GET("/my_comments", user.MyComments) //我的评论 ok
+		u.GET("/my_likes", user.MyLikesPost)   //我的点赞  ok
 
-		u.GET("/userOutline/:id", user.UserOutline)     //他人的大致信息  ok
-		u.GET("/userPost/:id", user.UserPost)           //他人的帖子 ok
-		u.GET("/userFollowers/:id", user.UserFollowers) //他人的粉丝  ok
-		u.GET("/userFollowing/:id", user.UserFollowing) //他人的关注  ok
-		u.GET("/userMsg/:id", user.UserMsg)             //他人的详细信息，只读 ok
+		u.GET("/:id/user_outline", user.UserOutline)     //他人的大致信息  ok
+		u.GET("/:id/user_post", user.UserPost)           //他人的帖子 ok
+		u.GET("/:id/user_followers", user.UserFollowers) //他人的粉丝  ok
+		u.GET("/:id/user_following", user.UserFollowing) //他人的关注  ok
+		u.GET("/:id/user_msg", user.UserMsg)             //他人的详细信息，只读 ok
 	}
 	p := r.Group("/api/v1/post")
 	p.Use(Midware.TokenMiddleWare)
 	{
+		p.GET("/search", post.SearchPosts)                    //搜索帖子 ok
 		p.GET("/latest", post.Latest)                         //查看最新帖子 ok
 		p.GET("/following", post.Following)                   //查看关注的人的帖子 ok
 		p.GET("/recommendations/:type", post.Recommendations) //查看推荐的帖子 ok
-		p.GET("/comments/:postId", post.Comments)             //查看某条帖子的评论 ok
-		p.GET("/reply/:commentId", post.Reply)                //查某个评论的回复 ok
+		p.GET("/comments/:post_id", post.Comments)            //查看某条帖子的评论 ok
+		p.GET("/comment_replies/:comment_id", post.Reply)     //查某个评论的回复 ok
 		p.GET("/:id", post.QueryOnePosts)                     //查找某一条帖子信息 ok
+		p.GET("/whether_like", post.WhetherLike)              //查询是否已点赞 ok
 
-		p.POST("/postCreate", post.CreatePost)             //发布帖子  ok
-		p.POST("/comments/:postId", post.AddComments)      //在帖子下面发评论  ok
-		p.POST("/commentsReply/:commentId", post.AddReply) //在评论下回复  ok
-		p.POST("/likes/:postId", post.AddLikes)            //点赞某个帖子  ok
+		p.POST("", post.CreatePost)               //发布帖子  ok
+		p.DELETE("", post.DeletePost)             //删除帖子 ok
+		p.PUT("", post.UpdatePost)                //修改帖子 ok
+		p.POST("/comments", post.AddComments)     //在帖子下面发评论  ok
+		p.POST("/comment_replies", post.AddReply) //在评论下回复  ok
+		p.POST("/likes", post.AddLikes)           //点赞某个帖子  ok
+		p.DELETE("/likes", post.DeleteLikes)      //取消点赞 ok
 	}
 }

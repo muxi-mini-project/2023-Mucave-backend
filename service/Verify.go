@@ -48,7 +48,7 @@ func GetToken(c *gin.Context) uint {
 func ParseToken(tokenString string) (*jwt.Token, *CustomClaims, error) {
 	Claims := &CustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, Claims, func(token *jwt.Token) (i interface{}, err error) {
-		return CustomSecret, nil
+		return []byte(CustomSecret), nil
 	})
 	return token, Claims, err
 }

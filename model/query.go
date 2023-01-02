@@ -1,6 +1,8 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func QueryNewPosts(start interface{}, length interface{}) ([]Post, error) {
 	var posts []Post
@@ -37,7 +39,7 @@ func QueryUserPosts(users []User) ([]Post, error) {
 	err := DB.Where("author_id in (?)", ids).Find(&posts).Error
 	return posts, err
 }
-func QueryIdPost(id string) (Post, error) {
+func QueryIdPost(id interface{}) (Post, error) {
 	var post Post
 	err := DB.Where("id = ?", id).Find(&post).Error
 	return post, err
@@ -109,5 +111,21 @@ func QueryMyReplies(id interface{}) ([]Reply, error) {
 func QueryMyLikesPosts(id interface{}) ([]Post, error) {
 	var posts []Post
 	err := DB.Model(&Post{}).Omit("likes.id,likes.created_at,likes.updated_at,likes.deleted_at,likes.post_id,likes.user_id").Joins("join likes on likes.post_id=posts.id").Where("likes.user_id=?", id).Find(&posts).Error
+	return posts, err
+}
+func WhetherLike(userId interface{}, postId interface{}) error {
+	var likes Likes
+	err := DB.Model(Likes{}).Where("user_id=? AND post_id=?", userId, postId).Take(&likes).Error
+	return err
+}
+func SearchPosts(point interface{}) ([]Post, error) {
+	var posts []Post
+	p, _ := point.(string)
+	err := DB.Where("title like ?", "%"+p+"%").Find(&posts).Error
+	return posts, err
+}
+func QueryOneUserPosts(userId interface{}) ([]Post, error) {
+	var posts []Post
+	err := DB.Where("author_id=?", userId).Find(&posts).Error
 	return posts, err
 }

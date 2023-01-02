@@ -3,6 +3,7 @@ package user
 import (
 	"Mucave/handler"
 	"Mucave/model"
+	qiniu "Mucave/pkg"
 	"Mucave/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -10,6 +11,16 @@ import (
 	"time"
 )
 
+// @Summary 登录验证
+// @Description  通过学号密码验证身份
+// @Tags login
+// @Accept application/json
+// @Produce application/json
+// @Param  username  formData string true "学号"
+// @Param  password  formData string true "密码"
+// @Success 200 {object} handler.Response "{"msg":"登录成功，获得token."}"
+// @Failure 400 {object} handler.Error  "{"msg":""Invalid username or password}"
+// @Router /login [POST]
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -31,8 +42,19 @@ func Login(c *gin.Context) {
 		})
 	}
 }
+
+// @Summary  关注
+// @Description 通过关注用户id和被关注用户id建立关注关系
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param followed_id query string true "被关注的用户的id"
+// @Success 200 {object} handler.Response "{"msg":"关注成功"}"
+// @Failure 400 {object} handler.Error  "{"msg":"关注失败"}"
+// @Router /user/following [POST]
 func Follow(c *gin.Context) {
-	followed_id, _ := strconv.Atoi(c.PostForm("followed_id"))
+	followed_id, _ := strconv.Atoi(c.Query("followed_id"))
 	relationship := model.Relationship{
 		FollowerId: service.GetId(c),
 		FollowedId: uint(followed_id),
@@ -44,35 +66,68 @@ func Follow(c *gin.Context) {
 	}
 	handler.SendResponse(c, "关注成功", nil)
 }
+
+// @Summary  取消关注
+// @Description  通过关注用户id和被关注用户id删除关注关系
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  followed_id  query string true "被关注者id"
+// @Success 200 {object} handler.Response "{"msg":"取消关注成功"}"
+// @Failure 400 {object} handler.Error  "{"msg":"取消关注失败"}"
+// @Router /user/following [DELETE]
 func UnFollow(c *gin.Context) {
-	followed_id, _ := strconv.Atoi(c.Query("followed_id"))
-	relationship := model.Relationship{
-		FollowerId: service.GetId(c),
-		FollowedId: uint(followed_id),
-	}
-	err := model.DeleteRelationship(relationship)
+	err := model.DeleteRelationship(c.Query("followed_id"), service.GetId(c))
 	if err != nil {
 		handler.SendError(c, 400, "取消关注失败.")
 		return
 	}
 	handler.SendResponse(c, "取消关注成功", nil)
 }
+
+// @Summary 我的大致信息
+// @Description  通过id获取我的大致信息：User,动态数，关注数，粉丝数.
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"数据为:user,动态数,关注数,粉丝数."}"
+// @Router /user/my_outline [GET]
 func Outline(c *gin.Context) {
 	id, _ := c.Get("UserId")
 	outline := model.QueryOutline(id)
 	handler.SendResponse(c, "数据为:user,动态数,关注数,粉丝数.", outline)
 }
+
+// @Summary 我的帖子
+// @Description   查询到我所有发布过的帖子信息
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到自己的帖子"}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询自己帖子失败"}"
+// @Router /user/my_post [GET]
 func MyPost(c *gin.Context) {
 	id, _ := c.Get("UserId")
-	user, _ := model.QueryIdUser(id)
-	users := []model.User{user}
-	posts, err := model.QueryUserPosts(users)
+	posts, err := model.QueryOneUserPosts(id)
 	if err != nil {
 		handler.SendError(c, 410, "查询自己帖子失败.")
 		return
 	}
 	handler.SendResponse(c, "查询到自己的帖子.", posts)
 }
+
+// @Summary 我的关注
+// @Description  查询我关注的用户
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到自己关注的用户"}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询自己关注的用户失败"}"
+// @Router /user/my_following [GET]
 func Following(c *gin.Context) {
 	id, _ := c.Get("UserId")
 	users, err := model.QueryFollowing(id)
@@ -82,6 +137,16 @@ func Following(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到自己关注的用户", users)
 }
+
+// @Summary 我的粉丝
+// @Description 查询到关注我的用户
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到自己的粉丝."}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询自己的粉丝失败."}"
+// @Router /user/my_followers [GET]
 func Followers(c *gin.Context) {
 	id, _ := c.Get("UserId")
 	users, err := model.QueryFollowers(id)
@@ -91,22 +156,52 @@ func Followers(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到自己的粉丝", users)
 }
+
+// @Summary 指定用户的大致信息
+// @Description  指定id用户的User,动态数,关注数,粉丝数.
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id  path string true "指定用户的id"
+// @Success 200 {object} handler.Response "{"msg":"数据为:user,动态数,关注数,粉丝数."}"
+// @Router /user/{id}/user_outline [GET]
 func UserOutline(c *gin.Context) {
 	id := c.Param("id")
 	outline := model.QueryOutline(id)
 	handler.SendResponse(c, "数据为:user,动态数,关注数,粉丝数.", outline)
 }
+
+// @Summary 指定用户的帖子
+// @Description  查询到指定id用户的所有帖子
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id  path string true "指定用户的id"
+// @Success 200 {object} handler.Response "{"msg":"查询到他人的帖子."}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询他人的帖子失败."}"
+// @Router /user/{id}/user_post [GET]
 func UserPost(c *gin.Context) {
 	id := c.Param("id")
-	user, _ := model.QueryIdUser(id)
-	users := []model.User{user}
-	posts, err := model.QueryUserPosts(users)
+	posts, err := model.QueryOneUserPosts(id)
 	if err != nil {
 		handler.SendError(c, 410, "查询他人的帖子失败.")
 		return
 	}
 	handler.SendResponse(c, "查询到他人的帖子.", posts)
 }
+
+// @Summary 用户的粉丝
+// @Description  查询指定id用户的粉丝列表
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id  path string true "指定用户的id"
+// @Success 200 {object} handler.Response "{"msg":"查询到他人的粉丝."}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询他人的粉丝失败."}"
+// @Router /user/{id}/user_followers [GET]
 func UserFollowers(c *gin.Context) {
 	id := c.Param("id")
 	users, err := model.QueryFollowers(id)
@@ -114,8 +209,19 @@ func UserFollowers(c *gin.Context) {
 		handler.SendError(c, 410, "查询他人的粉丝失败.")
 		return
 	}
-	handler.SendResponse(c, "查询到他人的粉丝", users)
+	handler.SendResponse(c, "查询到他人的粉丝.", users)
 }
+
+// @Summary 用户的关注
+// @Description  指定id用户的关注列表
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id  path string true "指定用户的id"
+// @Success 200 {object} handler.Response "{"msg":"查询到他人关注的用户."}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询他人关注的用户失败."}"
+// @Router /user/{id}/user_following [GET]
 func UserFollowing(c *gin.Context) {
 	id := c.Param("id")
 	users, err := model.QueryFollowing(id)
@@ -123,8 +229,19 @@ func UserFollowing(c *gin.Context) {
 		handler.SendError(c, 410, "查询他人关注的用户失败.")
 		return
 	}
-	handler.SendResponse(c, "查询到他人关注的用户", users)
+	handler.SendResponse(c, "查询到他人关注的用户.", users)
 }
+
+// @Summary 用户信息
+// @Description 查询指定id用户的信息
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id  path string true "指定用户的id"
+// @Success 200 {object} handler.Response "{"msg":"查询到指定的用户."}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询指定用户信息失败."}"
+// @Router /user/{id}/user_msg [GET]
 func UserMsg(c *gin.Context) {
 	id := c.Param("id")
 	user, err := model.QueryIdUser(id)
@@ -134,6 +251,16 @@ func UserMsg(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到指定的用户.", user)
 }
+
+// @Summary 我的信息
+// @Description 根据token中的id查我的User体
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到自己的信息."}"
+// @Failure 410 {object} handler.Error  "{"msg":"查询自己信息失败."}"
+// @Router /user/my_msg [GET]
 func MyMsg(c *gin.Context) {
 	id, _ := c.Get("UserId")
 	user, err := model.QueryIdUser(id)
@@ -141,22 +268,36 @@ func MyMsg(c *gin.Context) {
 		handler.SendError(c, 410, "查询自己信息失败.")
 		return
 	}
-	handler.SendResponse(c, "查询到自己的信息", user)
+	handler.SendResponse(c, "查询到自己的信息.", user)
 }
+
+// @Summary 发私信
+// @Description 通过id指定发私信的对象进行发私信
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id  path string true "指定用户的id"
+// @Param  file  formData file false "一个文件"
+// @Param  content  formData string true "私信的文本内容"
+// @Success 200 {object} handler.Response "{"msg":"发送私信成功."}"
+// @Failure 400 {object} handler.Error  "{"msg":"发送私信失败."}"
+// @Router /user/private_msg/{id} [POST]
 func PrivateMsgSend(c *gin.Context) {
+	urls := make([]string, 1, 1)
+	if c.Query("file") == "yes" {
+		urls, _ = qiniu.UploadFile(c)
+	}
 	sender, _ := c.Get("UserId")
 	receiver := c.Param("id")
-	SenderId, _ := sender.(uint)
-	senderId := strconv.Itoa(int(SenderId))
-	path := service.UploadFile(c, senderId+"-"+receiver)
-	sendID, _ := strconv.Atoi(senderId)
+	senderId, _ := sender.(uint)
 	receiverId, _ := strconv.Atoi(receiver)
 	privateMsg := model.PrivateMsg{
-		SenderId:   sendID,
-		ReceiverId: receiverId,
+		SenderId:   senderId,
+		ReceiverId: uint(receiverId),
 		Status:     1,
 		Content:    c.PostForm("content"),
-		FilePath:   path,
+		FilePath:   urls[0],
 		SendTime:   time.Now(),
 	}
 	err := model.CreatePrivateMsg(privateMsg)
@@ -166,6 +307,17 @@ func PrivateMsgSend(c *gin.Context) {
 	}
 	handler.SendResponse(c, "发送私信成功.", nil)
 }
+
+// @Summary 刷新私信
+// @Description  通过id刷新指定用户的向自己发的信息
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  id  path string true "指定用户的id"
+// @Success 200 {object} handler.Response "{"msg":"刷新私信成功"}"
+// @Failure 410 {object} handler.Error  "{"msg":"刷新私信失败"}"
+// @Router /user/private_msg/{id} [GET]
 func PrivateMsg(c *gin.Context) {
 	senderId := c.Param("id")
 	receiverId, _ := c.Get("UserId")
@@ -176,15 +328,35 @@ func PrivateMsg(c *gin.Context) {
 	}
 	handler.SendResponse(c, "刷新私信成功.", msgs)
 }
+
+// @Summary 修改我的信息
+// @Description  上传我的新User更新我的信息
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param  name  formData string true "名字"
+// @Param  gender formData string true "性别"
+// @Param  signature  formData string true "签名"
+// @Param  birthday  formData string true "生日(2006-01-02)"
+// @Param  hometown  formData string true "故乡"
+// @Param  grader  formData string true "年级"
+// @Param  faculties  formData string true "院系"
+// @Param  file  formData file true "头像文件"
+// @Success 200 {object} handler.Response "{"msg":"用户信息修改成功."}"
+// @Failure 400 {object} handler.Error  "{"msg":"用户信息修改失败."}"
+// @Router /user/my_msg [PUT]
 func MyMsgUpdate(c *gin.Context) {
-	path := service.UploadFile(c, service.GetId(c))
+	urls, _ := qiniu.UploadFile(c)
+	t := c.PostForm("birthday")
+	birthday, _ := time.Parse("2006-01-02", t)
 	newUserMsg := model.User{
 		Model:      gorm.Model{ID: service.GetId(c)},
 		Name:       c.PostForm("name"),
 		Gender:     c.PostForm("gender"),
 		Signature:  c.PostForm("signature"),
-		AvatarPath: path,
-		Birthday:   time.Now(),
+		AvatarPath: urls[0],
+		Birthday:   birthday,
 		Hometown:   c.PostForm("hometown"),
 		Grader:     c.PostForm("grader"),
 		Faculties:  c.PostForm("faculties"),
@@ -196,6 +368,16 @@ func MyMsgUpdate(c *gin.Context) {
 	}
 	handler.SendResponse(c, "用户信息修改成功.", nil)
 }
+
+// @Summary 我的评论
+// @Description  查询我的所有评论
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到我的评论."}"
+// @Failure 410 {object} handler.Error  "{"msg":"我的评论查询失败"}"
+// @Router /user/my_comments [GET]
 func MyComments(c *gin.Context) {
 	id, _ := c.Get("UserId")
 	comments, err := model.QueryMyComments(id)
@@ -205,6 +387,16 @@ func MyComments(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到我的评论.", comments)
 }
+
+// @Summary 我的回复
+// @Description  查询我的所有回复
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到我的回复."}"
+// @Failure 410 {object} handler.Error  "{"msg":"我的回复查询失败."}"
+// @Router /user/my_replies [GET]
 func MyReplies(c *gin.Context) {
 	id, _ := c.Get("UserId")
 	replies, err := model.QueryMyReplies(id)
@@ -214,6 +406,16 @@ func MyReplies(c *gin.Context) {
 	}
 	handler.SendResponse(c, "查询到我的回复", replies)
 }
+
+// @Summary 我的点赞
+// @Description 我点赞的所有的帖子
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"查询到我的点赞的帖子."}"
+// @Failure 410 {object} handler.Error  "{"msg":"我点赞过的帖子查询失败."}"
+// @Router /user/my_likes [GET]
 func MyLikesPost(c *gin.Context) {
 	id, _ := c.Get("UserId")
 	posts, err := model.QueryMyLikesPosts(id)
