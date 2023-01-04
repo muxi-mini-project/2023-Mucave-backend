@@ -143,16 +143,16 @@ paths:
         name: Authorization
         required: true
         type: string
-      - description: 类型
-        in: formData
-        name: type
-        required: true
-        type: string
       - description: 帖子id
         in: query
         name: post_id
         required: true
         type: integer
+      - description: 类型
+        in: formData
+        name: type
+        required: true
+        type: string
       - description: 标题
         in: formData
         name: title
@@ -167,26 +167,6 @@ paths:
         in: formData
         name: file
         type: file
-      - description: 文件地址1
-        in: formData
-        name: file_path1
-        required: true
-        type: string
-      - description: 文件地址2
-        in: formData
-        name: file_path2
-        required: true
-        type: string
-      - description: 文件地址3
-        in: formData
-        name: file_path3
-        required: true
-        type: string
-      - description: 文件地址4
-        in: formData
-        name: file_path4
-        required: true
-        type: string
       - description: yse/no(说明是否修改了文件)
         in: query
         name: file
@@ -250,6 +230,11 @@ paths:
       - description: 评论id
         in: query
         name: comment_id
+        required: true
+        type: integer
+      - description: 帖子id
+        in: query
+        name: post_id
         required: true
         type: integer
       produces:
@@ -331,6 +316,35 @@ paths:
       tags:
       - post
   /post/comment_reply:
+    delete:
+      consumes:
+      - application/json
+      description: 根据reply_id删除指定帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 回复id
+        in: query
+        name: reply_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"删回复成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"删回复失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 删回复
+      tags:
+      - post
     post:
       consumes:
       - application/json
@@ -559,36 +573,6 @@ paths:
       summary: 推荐的帖子
       tags:
       - post
-  /post/reply:
-    delete:
-      consumes:
-      - application/json
-      description: 根据reply_id删除指定帖子
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: 回复id
-        in: query
-        name: reply_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"msg":"删回复成功."}'
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "400":
-          description: '{"msg":"删回复失败."}'
-          schema:
-            $ref: '#/definitions/handler.Error'
-      summary: 删回复
-      tags:
-      - post
   /post/search:
     get:
       consumes:
@@ -789,6 +773,31 @@ paths:
           schema:
             $ref: '#/definitions/handler.Error'
       summary: 指定用户的帖子
+      tags:
+      - user
+  /user/all_private_msg:
+    get:
+      consumes:
+      - application/json
+      description: 刷新所有发向我的私信
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"刷新私信成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"刷新私信失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 刷新所有私信
       tags:
       - user
   /user/following:
@@ -1142,7 +1151,7 @@ paths:
           description: '{"msg":"刷新私信失败"}'
           schema:
             $ref: '#/definitions/handler.Error'
-      summary: 刷新私信
+      summary: 刷新指定私信
       tags:
       - user
     post:

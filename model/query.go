@@ -1,13 +1,20 @@
 package model
 
+import "strconv"
+
+func Atoi(i interface{}) int {
+	s, _ := i.(string)
+	a, _ := strconv.Atoi(s)
+	return a
+}
 func QueryNewPosts(start interface{}, length interface{}) ([]Post, error) {
 	var posts []Post
-	err := DB.Model(&Post{}).Order("id desc").Offset(start).Limit(length).Find(&posts).Error
+	err := DB.Model(&Post{}).Order("id desc").Offset(Atoi(start)).Limit(Atoi(length)).Find(&posts).Error
 	return posts, err
 }
 func QueryHotPosts(start interface{}, length interface{}, ty string) ([]Post, error) {
 	var posts []Post
-	err := DB.Model(&Post{}).Where("type=?", ty).Order("likes desc").Offset(start).Limit(length).Find(&posts).Error
+	err := DB.Model(&Post{}).Where("type=?", ty).Order("likes desc").Offset(Atoi(start)).Limit(Atoi(length)).Find(&posts).Error
 	return posts, err
 }
 func QueryId(username string) (uint, error) {
@@ -57,15 +64,15 @@ func QueryReplyByCommentId(id string) ([]Reply, error) {
 
 type Outline struct {
 	User        User
-	PostNo      int
-	FollowingNo int
-	FollowerNo  int
+	PostNo      int64
+	FollowingNo int64
+	FollowerNo  int64
 }
 
 func QueryOutline(id interface{}) Outline {
 	var user User
 	DB.Where("id = ?", id).Find(&user)
-	var postNo, followingNo, followerNo int
+	var postNo, followingNo, followerNo int64
 	DB.Model(&Post{}).Where("author_id=?", id).Count(&postNo)
 	DB.Model(&Relationship{}).Where("follower_id=?", id).Count(&followingNo)
 	DB.Model(&Relationship{}).Where("followed_id=?", id).Count(&followerNo)
@@ -79,7 +86,12 @@ func QueryOutline(id interface{}) Outline {
 }
 func QueryPrivateMsg(sender interface{}, receiver interface{}) ([]PrivateMsg, error) {
 	var privateMsgs []PrivateMsg
-	err1 := DB.Model(&PrivateMsg{}).Where("sender_id=? AND receiver_id=? AND status=1", sender, receiver).Find(&privateMsgs).Error
+	var err1 error
+	if s, _ := sender.(string); s == "all" {
+		err1 = DB.Model(&PrivateMsg{}).Where("receiver_id=? AND status=1", receiver).Find(&privateMsgs).Error
+	} else {
+		err1 = DB.Model(&PrivateMsg{}).Where("sender_id=? AND receiver_id=? AND status=1", sender, receiver).Find(&privateMsgs).Error
+	}
 	if err1 != nil {
 		return privateMsgs, err1
 	}

@@ -168,6 +168,7 @@ func Followers(c *gin.Context) {
 func UserOutline(c *gin.Context) {
 	id := c.Param("id")
 	outline := model.QueryOutline(id)
+	outline.User.UserName = "" //change
 	handler.SendResponse(c, "数据为:user,动态数,关注数,粉丝数.", outline)
 }
 
@@ -244,6 +245,7 @@ func UserFollowing(c *gin.Context) {
 func UserMsg(c *gin.Context) {
 	id := c.Param("id")
 	user, err := model.QueryIdUser(id)
+	user.UserName = "" //改
 	if err != nil {
 		handler.SendError(c, 410, "查询指定用户信息失败.")
 		return
@@ -302,7 +304,7 @@ func PrivateMsgSend(c *gin.Context) {
 	handler.SendResponse(c, "发送私信成功.", nil)
 }
 
-// @Summary 刷新私信
+// @Summary 刷新指定私信
 // @Description  通过id刷新指定用户的向自己发的信息
 // @Tags user
 // @Accept application/json
@@ -315,10 +317,32 @@ func PrivateMsgSend(c *gin.Context) {
 func PrivateMsg(c *gin.Context) {
 	msgs, err := model.QueryPrivateMsg(c.Param("id"), service.GetId(c))
 	if err != nil {
-		handler.SendError(c, 410, "刷新私信失败.")
+		handler.SendError(c, 410, "刷新指定私信失败.")
 		return
 	}
-	handler.SendResponse(c, "刷新私信成功.", msgs)
+	handler.SendResponse(c, "刷新指定私信成功.", msgs)
+}
+
+// @Summary 刷新所有私信
+// @Description  刷新所有发向我的私信
+// @Tags user
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Success 200 {object} handler.Response "{"msg":"刷新所有私信成功"}"
+// @Failure 410 {object} handler.Error  "{"msg":"刷新所有私信失败"}"
+// @Router /user/all_private_msg [GET]
+func AllPrivateMsg(c *gin.Context) {
+	msgs, err := model.QueryPrivateMsg("all", service.GetId(c))
+	m := make(map[uint][]model.PrivateMsg)
+	for _, msg := range msgs {
+		m[msg.SenderId] = append(m[msg.SenderId], msg)
+	}
+	if err != nil {
+		handler.SendError(c, 410, "刷新所有私信失败.")
+		return
+	}
+	handler.SendResponse(c, "刷新所有私信成功.(每个对象的信息在一个数组里ID:[])", m)
 }
 
 // @Summary 修改我的信息
@@ -356,7 +380,7 @@ func MyMsgUpdate(c *gin.Context) {
 	t := c.PostForm("birthday")
 	birthday, _ := time.Parse("2006-01-02", t)
 	newUserMsg.Birthday = birthday
-	err := model.UpdateUserMsg(newUserMsg)
+	err := model.UpdateUserMsg(newUserMsg, service.GetId(c))
 	if err != nil {
 		handler.SendError(c, 400, "用户信息修改失败.")
 		return

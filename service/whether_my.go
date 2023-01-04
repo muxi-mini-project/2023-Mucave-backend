@@ -23,6 +23,7 @@ func WhetherMyComment(userId interface{}, commentId interface{}) bool {
 		}
 	}
 	return false
+
 }
 
 func WhetherMyReply(userId interface{}, replyId interface{}) bool {

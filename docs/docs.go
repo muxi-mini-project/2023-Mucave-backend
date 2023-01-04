@@ -87,17 +87,17 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "类型",
-                        "name": "type",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
                         "type": "integer",
                         "description": "帖子id",
                         "name": "post_id",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "类型",
+                        "name": "type",
+                        "in": "formData",
                         "required": true
                     },
                     {
@@ -119,34 +119,6 @@ const docTemplate = `{
                         "description": "新文件组(有数量限制)",
                         "name": "file",
                         "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "文件地址1",
-                        "name": "file_path1",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "文件地址2",
-                        "name": "file_path2",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "文件地址3",
-                        "name": "file_path3",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "文件地址4",
-                        "name": "file_path4",
-                        "in": "formData",
-                        "required": true
                     },
                     {
                         "type": "string",
@@ -362,6 +334,13 @@ const docTemplate = `{
                         "name": "comment_id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "帖子id",
+                        "name": "post_id",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -477,6 +456,49 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "{\"msg\":\"回复失败\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "根据reply_id删除指定帖子",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "删回复",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "回复id",
+                        "name": "reply_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"删回复成功.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"msg\":\"删回复失败.\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -766,51 +788,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/post/reply": {
-            "delete": {
-                "description": "根据reply_id删除指定帖子",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "post"
-                ],
-                "summary": "删回复",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "回复id",
-                        "name": "reply_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"msg\":\"删回复成功.\"}",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "{\"msg\":\"删回复失败.\"}",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/post/search": {
             "get": {
                 "description": "通过关键词搜索标题有关键词的帖子",
@@ -933,6 +910,44 @@ const docTemplate = `{
                     },
                     "410": {
                         "description": "{\"msg\":\"指定的帖子查询失败.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/all_private_msg": {
+            "get": {
+                "description": "刷新所有发向我的私信",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "刷新所有私信",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"刷新私信成功\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "410": {
+                        "description": "{\"msg\":\"刷新私信失败\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -1437,7 +1452,7 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "刷新私信",
+                "summary": "刷新指定私信",
                 "parameters": [
                     {
                         "type": "string",

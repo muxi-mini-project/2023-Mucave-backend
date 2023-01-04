@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -23,7 +23,7 @@ func CreateReply(reply Reply) error {
 	return err
 }
 func CreateComment(comment Comment) error {
-	err := DB.Model(&Post{}).Where("id=?", comment.PostId).Update("comment_no", gorm.Expr("comment_no+1")).Error
+	err := DB.Model(&Post{}).Where("id=?", comment.PostId).Update("comment_no", gorm.Expr("comment_no+?", 1)).Error
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func CreateComment(comment Comment) error {
 	return nil
 }
 func CreateLikes(likes Likes) error {
-	err := DB.Model(&Post{}).Where("id=?", likes.PostId).Update("likes", gorm.Expr("likes+1")).Error
+	err := DB.Model(&Post{}).Where("id=?", likes.PostId).Update("likes", gorm.Expr("likes+?", 1)).Error
 	if err != nil {
 		return err
 	}

@@ -28,7 +28,7 @@ func (c *Config) initConfig(prefix string) error {
 		viper.SetConfigFile(c.Name)
 	} else {
 		// 	如果没有制指定配置文件，则解析默认的配置文件
-		viper.AddConfigPath("C:/Users/onlyB/GolandProjects/a/2023-Mucave-backend/conf")
+		viper.AddConfigPath("/home/pro1/2023-Mucave-backend1/conf")
 		viper.SetConfigName("config")
 	}
 	viper.SetConfigType("yaml") // 默认配置文件类型为yaml

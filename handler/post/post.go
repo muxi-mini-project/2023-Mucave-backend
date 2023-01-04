@@ -306,15 +306,11 @@ func DeleteLikes(c *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string true "token"
-// @Param type  formData string true "类型"
 // @Param post_id  query integer  true "帖子id"
+// @Param type  formData string true "类型"
 // @Param title  formData string true "标题"
 // @Param content  formData string true "文本内容"
 // @Param file  formData file false "新文件组(有数量限制)"
-// @Param file_path1  formData string true "文件地址1"
-// @Param file_path2  formData string true "文件地址2"
-// @Param file_path3  formData string true "文件地址3"
-// @Param file_path4  formData string true "文件地址4"
 // @Param file  query string true "yse/no(说明是否修改了文件)"
 // @Success 200 {object} handler.Response "{"msg":"修改帖子成功"}"
 // @Failure 400 {object} handler.Error  "{"msg":"修改帖子失败"}"
@@ -396,6 +392,7 @@ func SearchPosts(c *gin.Context) {
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param comment_id query integer true "评论id"
+// @Param post_id query integer true "帖子id"
 // @Success 200 {object} handler.Response "{"msg":"删评论成功."}"
 // @Failure 400 {object} handler.Error  "{"msg":"删评论失败."}"
 // @Router /post/comment [DELETE]
@@ -404,7 +401,7 @@ func DeleteComment(c *gin.Context) {
 		handler.SendError(c, 401, "没有权限.")
 		return
 	}
-	err := model.DeleteComment(c.Query("comment_id"))
+	err := model.DeleteComment(c.Query("comment_id"), c.Query("post_id"))
 	if err != nil {
 		handler.SendError(c, 400, "删评论失败.")
 		return
@@ -421,7 +418,7 @@ func DeleteComment(c *gin.Context) {
 // @Param reply_id query integer true "回复id"
 // @Success 200 {object} handler.Response "{"msg":"删回复成功."}"
 // @Failure 400 {object} handler.Error  "{"msg":"删回复失败."}"
-// @Router /post/reply [DELETE]
+// @Router /post/comment_reply [DELETE]
 func DeleteReply(c *gin.Context) {
 	if !service.WhetherMyReply(service.GetId(c), c.Query("reply_id")) {
 		handler.SendError(c, 401, "没有权限.")

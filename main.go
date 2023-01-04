@@ -20,10 +20,10 @@ var r *gin.Engine
 // @BasePath /api/v1
 // @Schemes http
 func main() {
-	config.Init("C:/Users/onlyB/GolandProjects/a/2023-Mucave-backend/conf/config.yaml", "")
+	config.Init("/home/pro1/2023-Mucave-backend1/conf/config.yaml", "")
 	qiniu.Load()
 	model.InitDB()
 	r = gin.Default()
 	router.Register(r)
-	r.Run(":8080")
+	r.Run("0.0.0.0:8899")
 }

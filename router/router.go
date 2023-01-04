@@ -16,10 +16,11 @@ func Register(r *gin.Engine) {
 	u := r.Group("/api/v1/user")
 	u.Use(Midware.TokenMiddleWare)
 	{
-		//u.GET("/getFile", handler.GetFiles)            //获取文件 ok
+		//u.GET("/getFile", handler.GetFiles)                     //获取文件 ok
 		u.POST("/following", user.Follow)               //关注  ok
 		u.DELETE("/following", user.UnFollow)           //取关  ok
 		u.GET("/private_msg/:id", user.PrivateMsg)      //刷新某人的来信  ok
+		u.GET("/all_private_msg", user.AllPrivateMsg)   //刷新所有给我的私信
 		u.POST("/private_msg/:id", user.PrivateMsgSend) //给某人发信息   ok
 		u.PUT("/my_msg", user.MyMsgUpdate)              //更新我的资料  ok
 
