@@ -15,7 +15,7 @@ definitions:
       msg:
         type: string
     type: object
-host: 43.138.61.49:22
+host: 43.138.61.49
 info:
   contact:
     email: 3264085417@qq.com
@@ -70,7 +70,7 @@ paths:
         in: query
         name: post_id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -116,7 +116,7 @@ paths:
         type: file
       - description: yse/no(说明是否上传了文件)
         in: query
-        name: file
+        name: file_have
         required: true
         type: string
       produces:
@@ -236,7 +236,101 @@ paths:
       summary: 查某个帖子
       tags:
       - post
-  /post/comment_replies:
+  /post/comment:
+    delete:
+      consumes:
+      - application/json
+      description: 根据comment_id删除指定评论
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 评论id
+        in: query
+        name: comment_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"删评论成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"删评论失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 删评论
+      tags:
+      - post
+    post:
+      consumes:
+      - application/json
+      description: 评论指定的帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      - description: 评论的内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"评论成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"评论失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 评论
+      tags:
+      - post
+  /post/comment_replies/{comment_id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据评论的id查询指定评论的所有回复
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定评论的id
+        in: path
+        name: comment_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到评论的回复"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询评论的回复失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 评论的回复
+      tags:
+      - post
+  /post/comment_reply:
     post:
       consumes:
       - application/json
@@ -274,71 +368,6 @@ paths:
           schema:
             $ref: '#/definitions/handler.Error'
       summary: 回复
-      tags:
-      - post
-  /post/comment_replies/{comment_id}:
-    get:
-      consumes:
-      - application/json
-      description: 根据评论的id查询指定评论的所有回复
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: 指定评论的id
-        in: path
-        name: comment_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"msg":"查询到评论的回复"}'
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "410":
-          description: '{"msg":"查询评论的回复失败."}'
-          schema:
-            $ref: '#/definitions/handler.Error'
-      summary: 评论的回复
-      tags:
-      - post
-  /post/comments:
-    post:
-      consumes:
-      - application/json
-      description: 评论指定的帖子
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: 帖子id
-        in: query
-        name: post_id
-        required: true
-        type: integer
-      - description: 评论的内容
-        in: formData
-        name: content
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"msg":"评论成功."}'
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "400":
-          description: '{"msg":"评论失败."}'
-          schema:
-            $ref: '#/definitions/handler.Error'
-      summary: 评论
       tags:
       - post
   /post/comments/{post_id}:
@@ -530,33 +559,37 @@ paths:
       summary: 推荐的帖子
       tags:
       - post
-  /post/whether_like:
-    get:
+  /post/reply:
+    delete:
       consumes:
       - application/json
-      description: 通过帖子id查询是否已经点赞
+      description: 根据reply_id删除指定帖子
       parameters:
       - description: token
         in: header
         name: Authorization
         required: true
         type: string
-      - description: 帖子id
+      - description: 回复id
         in: query
-        name: post_id
+        name: reply_id
         required: true
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: '{"msg":"yes"}'
+          description: '{"msg":"删回复成功."}'
           schema:
             $ref: '#/definitions/handler.Response'
-      summary: 是否已赞
+        "400":
+          description: '{"msg":"删回复失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 删回复
       tags:
       - post
-  /search:
+  /post/search:
     get:
       consumes:
       - application/json
@@ -584,6 +617,32 @@ paths:
           schema:
             $ref: '#/definitions/handler.Error'
       summary: 搜索帖子
+      tags:
+      - post
+  /post/whether_like:
+    get:
+      consumes:
+      - application/json
+      description: 通过帖子id查询是否已经点赞
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"yes"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: 是否已赞
       tags:
       - post
   /user/{id}/user_followers:
@@ -966,6 +1025,11 @@ paths:
         name: file
         required: true
         type: file
+      - description: yes/no(yes:修改头像 no:修改其他信息)
+        in: query
+        name: avatar_only
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1100,10 +1164,19 @@ paths:
         in: formData
         name: file
         type: file
+      - description: yes/no(说明是否附带文件)
+        in: query
+        name: file_have
+        required: true
+        type: string
+      - description: yes/no(说明是否有文本)
+        in: query
+        name: content_have
+        required: true
+        type: string
       - description: 私信的文本内容
         in: formData
         name: content
-        required: true
         type: string
       produces:
       - application/json
@@ -1119,6 +1192,32 @@ paths:
       summary: 发私信
       tags:
       - user
+  /user/whether_follow:
+    get:
+      consumes:
+      - application/json
+      description: 通过用户id查询是否已经关注
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 用户id
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"yes"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: 是否关注
+      tags:
+      - post
 schemes:
 - http
 swagger: "2.0"

@@ -17,9 +17,6 @@ import (
 // @Param token header string false "token"
 // @Failure 401 {object} handler.Error  "{"msg":"权限不足"}"
 func TokenMiddleWare(c *gin.Context) {
-	//c.Set("UserId", uint(2))
-	//c.Next()
-	//return
 	UserId := service.GetToken(c)
 	if UserId == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "权限不足"})

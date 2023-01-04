@@ -6,7 +6,6 @@ import (
 	qiniu "Mucave/pkg"
 	"Mucave/service"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"strconv"
 	"time"
 )
@@ -279,26 +278,21 @@ func MyMsg(c *gin.Context) {
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
 // @Param  file  formData file false "一个文件"
-// @Param  content  formData string true "私信的文本内容"
+// @Param  file_have  query string true "yes/no(说明是否附带文件)"
+// @Param  content_have  query string true "yes/no(说明是否有文本)"
+// @Param  content  formData string false "私信的文本内容"
 // @Success 200 {object} handler.Response "{"msg":"发送私信成功."}"
 // @Failure 400 {object} handler.Error  "{"msg":"发送私信失败."}"
 // @Router /user/private_msg/{id} [POST]
 func PrivateMsgSend(c *gin.Context) {
-	urls := make([]string, 1, 1)
-	if c.Query("file") == "yes" {
+	privateMsg := service.MsgTmp(c)
+	if c.Query("file_have") == "yes" {
+		urls := make([]string, 1, 1)
 		urls, _ = qiniu.UploadFile(c)
+		privateMsg.FilePath = urls[0]
 	}
-	sender, _ := c.Get("UserId")
-	receiver := c.Param("id")
-	senderId, _ := sender.(uint)
-	receiverId, _ := strconv.Atoi(receiver)
-	privateMsg := model.PrivateMsg{
-		SenderId:   senderId,
-		ReceiverId: uint(receiverId),
-		Status:     1,
-		Content:    c.PostForm("content"),
-		FilePath:   urls[0],
-		SendTime:   time.Now(),
+	if c.Query("content_have") != "no" {
+		privateMsg.Content = c.PostForm("content")
 	}
 	err := model.CreatePrivateMsg(privateMsg)
 	if err != nil {
@@ -319,9 +313,7 @@ func PrivateMsgSend(c *gin.Context) {
 // @Failure 410 {object} handler.Error  "{"msg":"刷新私信失败"}"
 // @Router /user/private_msg/{id} [GET]
 func PrivateMsg(c *gin.Context) {
-	senderId := c.Param("id")
-	receiverId, _ := c.Get("UserId")
-	msgs, err := model.QueryPrivateMsg(senderId, receiverId)
+	msgs, err := model.QueryPrivateMsg(c.Param("id"), service.GetId(c))
 	if err != nil {
 		handler.SendError(c, 410, "刷新私信失败.")
 		return
@@ -343,24 +335,27 @@ func PrivateMsg(c *gin.Context) {
 // @Param  grader  formData string true "年级"
 // @Param  faculties  formData string true "院系"
 // @Param  file  formData file true "头像文件"
+// @Param avatar_only query string  true "yes/no(yes:修改头像 no:修改其他信息)"
 // @Success 200 {object} handler.Response "{"msg":"用户信息修改成功."}"
 // @Failure 400 {object} handler.Error  "{"msg":"用户信息修改失败."}"
 // @Router /user/my_msg [PUT]
 func MyMsgUpdate(c *gin.Context) {
-	urls, _ := qiniu.UploadFile(c)
+	if c.Query("avatar_only") == "yes" {
+		urls, _ := qiniu.UploadFile(c)
+		path := urls[0]
+		err := model.UpdateAvatar(service.GetId(c), path)
+		if err != nil {
+			handler.SendError(c, 400, "用户头像修改失败.")
+			return
+		}
+		handler.SendResponse(c, "用户头像修改成功.", nil)
+		return
+	}
+	var newUserMsg model.User
+	c.ShouldBind(&newUserMsg)
 	t := c.PostForm("birthday")
 	birthday, _ := time.Parse("2006-01-02", t)
-	newUserMsg := model.User{
-		Model:      gorm.Model{ID: service.GetId(c)},
-		Name:       c.PostForm("name"),
-		Gender:     c.PostForm("gender"),
-		Signature:  c.PostForm("signature"),
-		AvatarPath: urls[0],
-		Birthday:   birthday,
-		Hometown:   c.PostForm("hometown"),
-		Grader:     c.PostForm("grader"),
-		Faculties:  c.PostForm("faculties"),
-	}
+	newUserMsg.Birthday = birthday
 	err := model.UpdateUserMsg(newUserMsg)
 	if err != nil {
 		handler.SendError(c, 400, "用户信息修改失败.")
@@ -424,4 +419,23 @@ func MyLikesPost(c *gin.Context) {
 		return
 	}
 	handler.SendResponse(c, "查询到我点赞的帖子", posts)
+}
+
+// @Summary  是否关注
+// @Description 通过用户id查询是否已经关注
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param user_id query integer true "用户id"
+// @Success 200 {object} handler.Response "{"msg":"no"}"
+// @Success 200 {object} handler.Response "{"msg":"yes"}"
+// @Router /user/whether_follow [GET]
+func WhetherFollow(c *gin.Context) {
+	follow := model.WhetherFollow(c.Query("user_id"), service.GetId(c))
+	if !follow {
+		handler.SendResponse(c, "no", nil)
+		return
+	}
+	handler.SendResponse(c, "yes", nil)
 }

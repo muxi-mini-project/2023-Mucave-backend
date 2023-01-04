@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -10,7 +9,6 @@ func DeleteRelationship(followedId interface{}, followerId interface{}) error {
 	return err
 }
 func DeletePost(postId interface{}) error {
-	fmt.Println(postId)
 	err := DB.Where("id=?", postId).Delete(&Post{}).Error
 	return err
 }
@@ -20,9 +18,19 @@ func DeleteLikes(userId interface{}, postId interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = DB.Delete(&Likes{}).Where("post_id=?", postId).Error
+	err = DB.Delete(&Likes{}).Where("post_id=? AND author_id=?", postId, userId).Error
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func DeleteComment(commentId interface{}) error {
+	err := DB.Where("id=?", commentId).Delete(&Comment{}).Error
+	return err
+}
+
+func DeleteReply(replyId interface{}) error {
+	err := DB.Where("id=?", replyId).Delete(&Reply{}).Error
+	return err
 }

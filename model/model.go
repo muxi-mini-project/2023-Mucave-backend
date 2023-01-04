@@ -30,7 +30,7 @@ func InitDB() {
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	client, _ := ssh.Dial("tcp", viper.GetString("server_ip"), config)
+	client, _ := ssh.Dial("tcp", "43.138.61.49:22", config)
 	mysql.RegisterDialContext("mysql+tcp", (&ViaSSHDialer{client}).Dial)
 	dsn := fmt.Sprintf("%v:%v@mysql+tcp(127.0.0.1:3306)/csc?charset=utf8&parseTime=True&loc=Local", u, p)
 	DB, _ = gorm.Open("mysql", dsn)

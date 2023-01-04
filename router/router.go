@@ -32,6 +32,7 @@ func Register(r *gin.Engine) {
 		u.GET("/my_comments", user.MyComments) //我的评论 ok
 		u.GET("/my_likes", user.MyLikesPost)   //我的点赞  ok
 
+		u.GET("/whether_follow", user.WhetherFollow)     //他人是否被我关注
 		u.GET("/:id/user_outline", user.UserOutline)     //他人的大致信息  ok
 		u.GET("/:id/user_post", user.UserPost)           //他人的帖子 ok
 		u.GET("/:id/user_followers", user.UserFollowers) //他人的粉丝  ok
@@ -50,12 +51,14 @@ func Register(r *gin.Engine) {
 		p.GET("/:id", post.QueryOnePosts)                     //查找某一条帖子信息 ok
 		p.GET("/whether_like", post.WhetherLike)              //查询是否已点赞 ok
 
-		p.POST("", post.CreatePost)               //发布帖子  ok
-		p.DELETE("", post.DeletePost)             //删除帖子 ok
-		p.PUT("", post.UpdatePost)                //修改帖子 ok
-		p.POST("/comments", post.AddComments)     //在帖子下面发评论  ok
-		p.POST("/comment_replies", post.AddReply) //在评论下回复  ok
-		p.POST("/likes", post.AddLikes)           //点赞某个帖子  ok
-		p.DELETE("/likes", post.DeleteLikes)      //取消点赞 ok
+		p.POST("", post.CreatePost)                  //发布帖子  ok
+		p.DELETE("", post.DeletePost)                //删除帖子 ok
+		p.PUT("", post.UpdatePost)                   //修改帖子 ok
+		p.POST("/comment", post.AddComment)          //在帖子下面发评论  ok
+		p.DELETE("/comment", post.DeleteComment)     //删除评论
+		p.POST("/comment_reply", post.AddReply)      //在评论下回复  ok
+		p.DELETE("/comment_reply", post.DeleteReply) //删除评论的回复
+		p.POST("/likes", post.AddLikes)              //点赞某个帖子  ok
+		p.DELETE("/likes", post.DeleteLikes)         //取消点赞 ok
 	}
 }

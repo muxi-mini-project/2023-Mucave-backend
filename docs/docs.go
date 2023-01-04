@@ -221,7 +221,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "yse/no(说明是否上传了文件)",
-                        "name": "file",
+                        "name": "file_have",
                         "in": "query",
                         "required": true
                     }
@@ -262,7 +262,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "帖子id",
                         "name": "post_id",
                         "in": "query",
@@ -285,9 +285,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/post/comment_replies": {
+        "/post/comment": {
             "post": {
-                "description": "给指定评论添加回复",
+                "description": "评论指定的帖子",
                 "consumes": [
                     "application/json"
                 ],
@@ -297,7 +297,7 @@ const docTemplate = `{
                 "tags": [
                     "post"
                 ],
-                "summary": "回复",
+                "summary": "评论",
                 "parameters": [
                     {
                         "type": "string",
@@ -308,21 +308,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "评论的id",
-                        "name": "comment_id",
+                        "description": "帖子id",
+                        "name": "post_id",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "回复对象的id",
-                        "name": "object",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
                         "type": "string",
-                        "description": "回复的内容",
+                        "description": "评论的内容",
                         "name": "content",
                         "in": "formData",
                         "required": true
@@ -330,13 +323,56 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"msg\":\"回复成功\"}",
+                        "description": "{\"msg\":\"评论成功.\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "400": {
-                        "description": "{\"msg\":\"回复失败\"}",
+                        "description": "{\"msg\":\"评论失败.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "根据comment_id删除指定评论",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "删评论",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "评论id",
+                        "name": "comment_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"删评论成功.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"msg\":\"删评论失败.\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -389,9 +425,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/post/comments": {
+        "/post/comment_reply": {
             "post": {
-                "description": "评论指定的帖子",
+                "description": "给指定评论添加回复",
                 "consumes": [
                     "application/json"
                 ],
@@ -401,7 +437,7 @@ const docTemplate = `{
                 "tags": [
                     "post"
                 ],
-                "summary": "评论",
+                "summary": "回复",
                 "parameters": [
                     {
                         "type": "string",
@@ -412,14 +448,21 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "帖子id",
-                        "name": "post_id",
+                        "description": "评论的id",
+                        "name": "comment_id",
                         "in": "query",
                         "required": true
                     },
                     {
+                        "type": "integer",
+                        "description": "回复对象的id",
+                        "name": "object",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
                         "type": "string",
-                        "description": "评论的内容",
+                        "description": "回复的内容",
                         "name": "content",
                         "in": "formData",
                         "required": true
@@ -427,13 +470,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"msg\":\"评论成功.\"}",
+                        "description": "{\"msg\":\"回复成功\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "400": {
-                        "description": "{\"msg\":\"评论失败.\"}",
+                        "description": "{\"msg\":\"回复失败\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -723,6 +766,96 @@ const docTemplate = `{
                 }
             }
         },
+        "/post/reply": {
+            "delete": {
+                "description": "根据reply_id删除指定帖子",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "删回复",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "回复id",
+                        "name": "reply_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"删回复成功.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"msg\":\"删回复失败.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/post/search": {
+            "get": {
+                "description": "通过关键词搜索标题有关键词的帖子",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "搜索帖子",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "关键词",
+                        "name": "query_string",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"搜索成功.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "410": {
+                        "description": "{\"msg\":\"搜索失败.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/post/whether_like": {
             "get": {
                 "description": "通过帖子id查询是否已经点赞",
@@ -800,51 +933,6 @@ const docTemplate = `{
                     },
                     "410": {
                         "description": "{\"msg\":\"指定的帖子查询失败.\"}",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/search": {
-            "get": {
-                "description": "通过关键词搜索标题有关键词的帖子",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "post"
-                ],
-                "summary": "搜索帖子",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "关键词",
-                        "name": "query_string",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"msg\":\"搜索成功.\"}",
-                        "schema": {
-                            "$ref": "#/definitions/handler.Response"
-                        }
-                    },
-                    "410": {
-                        "description": "{\"msg\":\"搜索失败.\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -1204,6 +1292,13 @@ const docTemplate = `{
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "yes/no(yes:修改头像 no:修改其他信息)",
+                        "name": "avatar_only",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1409,10 +1504,23 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "yes/no(说明是否附带文件)",
+                        "name": "file_have",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "yes/no(说明是否有文本)",
+                        "name": "content_have",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "私信的文本内容",
                         "name": "content",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1426,6 +1534,45 @@ const docTemplate = `{
                         "description": "{\"msg\":\"发送私信失败.\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/whether_follow": {
+            "get": {
+                "description": "通过用户id查询是否已经关注",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "是否关注",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "用户id",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"yes\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
                         }
                     }
                 }
@@ -1681,7 +1828,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.1.0",
-	Host:             "43.138.61.49:22",
+	Host:             "43.138.61.49",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http"},
 	Title:            "Mucave",

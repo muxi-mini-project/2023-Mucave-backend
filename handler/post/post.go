@@ -146,28 +146,33 @@ func Reply(c *gin.Context) {
 // @Param title  formData string true "标题"
 // @Param content  formData string true "文本内容"
 // @Param file  formData file false "文件组(有数量限制)"
-// @Param file  query string true "yse/no(说明是否上传了文件)"
+// @Param file_have  query string true "yse/no(说明是否上传了文件)"
 // @Success 200 {object} handler.Response "{"msg":"发布成功"}"
 // @Failure 400 {object} handler.Error  "{"msg":"新建帖子失败"}"
 // @Router /post [POST]
 func CreatePost(c *gin.Context) {
-	post := model.Post{
-		AuthorId:  service.GetId(c),
-		Title:     c.PostForm("title"),
-		Type:      c.PostForm("type"),
-		Content:   c.PostForm("content"),
-		Likes:     0,
-		CommentNo: 0,
-	}
-	if c.Query("file") == "yes" {
+	//post := model.Post{
+	//	AuthorId:  service.GetId(c),
+	//	Title:     c.PostForm("title"),
+	//	Type:      c.PostForm("type"),
+	//	Content:   c.PostForm("content"),
+	//	Likes:     0,
+	//	CommentNo: 0,
+	//}
+	var post model.Post
+	c.ShouldBind(&post)
+	post.AuthorId = service.GetId(c)
+	if c.Query("file_have") == "yes" {
 		urls, _ := qiniu.UploadFile(c)
-		for len(urls) < 4 {
+		for len(urls) < 6 {
 			urls = append(urls, "")
 		}
 		post.FilePath1 = urls[0]
 		post.FilePath2 = urls[1]
 		post.FilePath3 = urls[2]
 		post.FilePath4 = urls[3]
+		post.FilePath5 = urls[4]
+		post.FilePath6 = urls[5]
 	}
 	err := model.CreatePost(post)
 	if err != nil {
@@ -188,7 +193,7 @@ func CreatePost(c *gin.Context) {
 // @Param  content  formData string true "回复的内容"
 // @Success 200 {object} handler.Response "{"msg":"回复成功"}"
 // @Failure 400 {object} handler.Error  "{"msg":"回复失败"}"
-// @Router /post/comment_replies [POST]
+// @Router /post/comment_reply [POST]
 func AddReply(c *gin.Context) {
 	commentId, _ := strconv.Atoi(c.Query("comment_id"))
 	object, _ := strconv.Atoi(c.PostForm("object"))
@@ -216,8 +221,8 @@ func AddReply(c *gin.Context) {
 // @Param  content  formData string true "评论的内容"
 // @Success 200 {object} handler.Response "{"msg":"评论成功."}"
 // @Failure 400 {object} handler.Error  "{"msg":"评论失败."}"
-// @Router /post/comments [POST]
-func AddComments(c *gin.Context) {
+// @Router /post/comment [POST]
+func AddComment(c *gin.Context) {
 	postId, _ := strconv.Atoi(c.Query("post_id"))
 	comment := model.Comment{
 		PostId:  uint(postId),
@@ -268,8 +273,8 @@ func AddLikes(c *gin.Context) {
 // @Router /post/whether_like [GET]
 func WhetherLike(c *gin.Context) {
 	id, _ := c.Get("UserId")
-	err := model.WhetherLike(id, c.Query("post_id"))
-	if err != nil {
+	like := model.WhetherLike(id, c.Query("post_id"))
+	if !like {
 		handler.SendResponse(c, "no", nil)
 		return
 	}
@@ -321,19 +326,19 @@ func UpdatePost(c *gin.Context) {
 	}
 	var post model.Post
 	c.ShouldBind(&post)
-	postId, _ := strconv.Atoi(c.Query("post_id"))
-	post.ID = uint(postId)
 	if c.Query("file") == "yes" {
 		urls, _ := qiniu.UploadFile(c)
-		for len(urls) < 4 {
+		for len(urls) < 6 {
 			urls = append(urls, "")
 		}
 		post.FilePath1 = urls[0]
 		post.FilePath2 = urls[1]
 		post.FilePath3 = urls[2]
 		post.FilePath4 = urls[3]
+		post.FilePath5 = urls[4]
+		post.FilePath6 = urls[5]
 	}
-	err := model.UpdatePost(post)
+	err := model.UpdatePost(c.Query("file"), post, c.Query("post_id"))
 	if err != nil {
 		handler.SendError(c, 400, "修改帖子失败.")
 		return
@@ -347,7 +352,7 @@ func UpdatePost(c *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Param Authorization header string true "token"
-// @Param post_id query string true "帖子id"
+// @Param post_id query integer true "帖子id"
 // @Success 200 {object} handler.Response "{"msg":"删帖成功."}"
 // @Failure 400 {object} handler.Error  "{"msg":"删帖失败."}"
 // @Router /post [DELETE]
@@ -356,8 +361,7 @@ func DeletePost(c *gin.Context) {
 		handler.SendError(c, 401, "没有权限.")
 		return
 	}
-	id := c.Query("post_id")
-	err := model.DeletePost(id)
+	err := model.DeletePost(c.Query("post_id"))
 	if err != nil {
 		handler.SendError(c, 400, "删帖失败.")
 		return
@@ -374,7 +378,7 @@ func DeletePost(c *gin.Context) {
 // @Param  query_string  query string true "关键词"
 // @Success 200 {object} handler.Response "{"msg":"搜索成功."}"
 // @Failure 410 {object} handler.Error  "{"msg":"搜索失败."}"
-// @Router /search [GET]
+// @Router /post/search [GET]
 func SearchPosts(c *gin.Context) {
 	point := c.Query("query_string")
 	posts, err := model.SearchPosts(point)
@@ -383,4 +387,50 @@ func SearchPosts(c *gin.Context) {
 		return
 	}
 	handler.SendResponse(c, "搜索成功.", posts)
+}
+
+// @Summary 删评论
+// @Description  根据comment_id删除指定评论
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param comment_id query integer true "评论id"
+// @Success 200 {object} handler.Response "{"msg":"删评论成功."}"
+// @Failure 400 {object} handler.Error  "{"msg":"删评论失败."}"
+// @Router /post/comment [DELETE]
+func DeleteComment(c *gin.Context) {
+	if !service.WhetherMyComment(service.GetId(c), c.Query("comment_id")) {
+		handler.SendError(c, 401, "没有权限.")
+		return
+	}
+	err := model.DeleteComment(c.Query("comment_id"))
+	if err != nil {
+		handler.SendError(c, 400, "删评论失败.")
+		return
+	}
+	handler.SendResponse(c, "删评论成功.", nil)
+}
+
+// @Summary 删回复
+// @Description  根据reply_id删除指定帖子
+// @Tags post
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Param reply_id query integer true "回复id"
+// @Success 200 {object} handler.Response "{"msg":"删回复成功."}"
+// @Failure 400 {object} handler.Error  "{"msg":"删回复失败."}"
+// @Router /post/reply [DELETE]
+func DeleteReply(c *gin.Context) {
+	if !service.WhetherMyReply(service.GetId(c), c.Query("reply_id")) {
+		handler.SendError(c, 401, "没有权限.")
+		return
+	}
+	err := model.DeleteReply(c.Query("reply_id"))
+	if err != nil {
+		handler.SendError(c, 400, "删回复失败.")
+		return
+	}
+	handler.SendResponse(c, "删回复成功.", nil)
 }

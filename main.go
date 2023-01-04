@@ -16,7 +16,7 @@ var r *gin.Engine
 // @termsOfService http://swagger.io/terrms/
 // @contact.name  big_dust
 // @contact.email 3264085417@qq.com
-// @host 43.138.61.49:22
+// @host 43.138.61.49
 // @BasePath /api/v1
 // @Schemes http
 func main() {

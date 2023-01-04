@@ -7,15 +7,15 @@ import (
 
 type User struct {
 	gorm.Model
-	UserName   string    `form:"user_name" json:"user_name"`
-	Name       string    `form:"name" json:"name"`
-	Gender     string    `form:"gender" json:"gender"`
-	Signature  string    `form:"signature" json:"signature"`
-	AvatarPath string    `form:"avatar_path" json:"avatar_path"`
-	Birthday   time.Time `form:"birthday" json:"birthday"`
-	Hometown   string    `form:"hometown" json:"hometown"`
-	Grader     string    `form:"grader" json:"grader"`
-	Faculties  string    `form:"faculties" json:"faculties"`
+	UserName   string `form:"user_name" json:"user_name"`
+	Name       string `form:"name" json:"name"`
+	Gender     string `form:"gender" json:"gender"`
+	Signature  string `form:"signature" json:"signature"`
+	AvatarPath string `form:"avatar_path" json:"avatar_path"`
+	Birthday   time.Time
+	Hometown   string `form:"hometown" json:"hometown"`
+	Grader     string `form:"grader" json:"grader"`
+	Faculties  string `form:"faculties" json:"faculties"`
 }
 type Post struct {
 	gorm.Model
@@ -29,6 +29,8 @@ type Post struct {
 	FilePath2 string `form:"file_path2" json:"file_path2"`
 	FilePath3 string `form:"file_path3" json:"file_path3"`
 	FilePath4 string `form:"file_path4" json:"file_path4"`
+	FilePath5 string `form:"file_path5" json:"file_path5"`
+	FilePath6 string `form:"file_path6" json:"file_path6"`
 }
 type Comment struct {
 	gorm.Model
