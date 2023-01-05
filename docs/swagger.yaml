@@ -1,0 +1,1232 @@
+basePath: /api/v1
+definitions:
+  handler.Error:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+    type: object
+  handler.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+host: 43.138.61.49
+info:
+  contact:
+    email: 3264085417@qq.com
+    name: big_dust
+  description: MucaveAPI
+  termsOfService: http://swagger.io/terrms/
+  title: Mucave
+  version: 1.1.0
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 通过学号密码验证身份
+      parameters:
+      - description: 学号
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: 密码
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"登录成功，获得token."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":""Invalid username or password}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 登录验证
+      tags:
+      - login
+  /post:
+    delete:
+      consumes:
+      - application/json
+      description: 根据post_id删除指定帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"删帖成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"删帖失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 删帖
+      tags:
+      - post
+    post:
+      consumes:
+      - application/json
+      description: 上传帖子的各项信息，发布帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 类型
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 文本内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      - description: 文件组(有数量限制)
+        in: formData
+        name: file
+        type: file
+      - description: yse/no(说明是否上传了文件)
+        in: query
+        name: file_have
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"发布成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"新建帖子失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 发布帖子
+      tags:
+      - post
+    put:
+      consumes:
+      - application/json
+      description: 上传所有内容然后修改所有内容,
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      - description: 类型
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 文本内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      - description: 新文件组(有数量限制)
+        in: formData
+        name: file
+        type: file
+      - description: yse/no(说明是否修改了文件)
+        in: query
+        name: file
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"修改帖子成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"修改帖子失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 修改帖子
+      tags:
+      - post
+  /post/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 通过帖子的id获得某个帖子的详细信息
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定帖子的id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到指定的帖子"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"指定的帖子查询失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 查某个帖子
+      tags:
+      - post
+  /post/comment:
+    delete:
+      consumes:
+      - application/json
+      description: 根据comment_id删除指定评论
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 评论id
+        in: query
+        name: comment_id
+        required: true
+        type: integer
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"删评论成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"删评论失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 删评论
+      tags:
+      - post
+    post:
+      consumes:
+      - application/json
+      description: 评论指定的帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      - description: 评论的内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"评论成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"评论失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 评论
+      tags:
+      - post
+  /post/comment_replies/{comment_id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据评论的id查询指定评论的所有回复
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定评论的id
+        in: path
+        name: comment_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到评论的回复"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询评论的回复失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 评论的回复
+      tags:
+      - post
+  /post/comment_reply:
+    delete:
+      consumes:
+      - application/json
+      description: 根据reply_id删除指定帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 回复id
+        in: query
+        name: reply_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"删回复成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"删回复失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 删回复
+      tags:
+      - post
+    post:
+      consumes:
+      - application/json
+      description: 给指定评论添加回复
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 评论的id
+        in: query
+        name: comment_id
+        required: true
+        type: integer
+      - description: 回复对象的id
+        in: formData
+        name: object
+        required: true
+        type: integer
+      - description: 回复的内容
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"回复成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"回复失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 回复
+      tags:
+      - post
+  /post/comments/{post_id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据帖子的id查询指定帖子的所有评论(不包括评论的回复)
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定帖子的id
+        in: path
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到帖子的评论."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"帖子的评论查询失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 帖子的评论
+      tags:
+      - post
+  /post/following:
+    get:
+      consumes:
+      - application/json
+      description: 查询关注用户的帖子（所有）
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到关注的用户的帖子的数组"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询关注用户的帖子失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 关注用户帖子
+      tags:
+      - post
+  /post/latest:
+    get:
+      consumes:
+      - application/json
+      description: 查询最新发布的帖子，返回的开始点和数量由query参数决定
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 开始点
+        in: query
+        name: start
+        required: true
+        type: integer
+      - description: 需要返回的帖子数量
+        in: query
+        name: length
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到最新的帖子（数组）"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"最新帖子查询失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 最新的帖子
+      tags:
+      - post
+  /post/likes:
+    delete:
+      consumes:
+      - application/json
+      description: 通过帖子id取消点赞
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"取消点赞成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"取消点赞失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 取消点赞
+      tags:
+      - post
+    post:
+      consumes:
+      - application/json
+      description: 点赞指定的帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"点赞成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"点赞失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 点赞
+      tags:
+      - post
+  /post/recommendations/{type}:
+    get:
+      consumes:
+      - application/json
+      description: 查询点赞最多的帖子，返回的开始点和数量由query参数决定，类型有type参数决定
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子类型
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: 开始点
+        in: query
+        name: start
+        required: true
+        type: integer
+      - description: 需要返回的帖子数量
+        in: query
+        name: length
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到推荐的帖子（数组）"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"推荐帖子查询失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 推荐的帖子
+      tags:
+      - post
+  /post/search:
+    get:
+      consumes:
+      - application/json
+      description: 通过关键词搜索标题有关键词的帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 关键词
+        in: query
+        name: query_string
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"搜索成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"搜索失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 搜索帖子
+      tags:
+      - post
+  /post/whether_like:
+    get:
+      consumes:
+      - application/json
+      description: 通过帖子id查询是否已经点赞
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: query
+        name: post_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"yes"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: 是否已赞
+      tags:
+      - post
+  /user/{id}/user_followers:
+    get:
+      consumes:
+      - application/json
+      description: 查询指定id用户的粉丝列表
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定用户的id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到他人的粉丝."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询他人的粉丝失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 用户的粉丝
+      tags:
+      - user
+  /user/{id}/user_following:
+    get:
+      consumes:
+      - application/json
+      description: 指定id用户的关注列表
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定用户的id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到他人关注的用户."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询他人关注的用户失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 用户的关注
+      tags:
+      - user
+  /user/{id}/user_msg:
+    get:
+      consumes:
+      - application/json
+      description: 查询指定id用户的信息
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定用户的id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到指定的用户."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询指定用户信息失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 用户信息
+      tags:
+      - user
+  /user/{id}/user_outline:
+    get:
+      consumes:
+      - application/json
+      description: 指定id用户的User,动态数,关注数,粉丝数.
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定用户的id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"数据为:user,动态数,关注数,粉丝数."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: 指定用户的大致信息
+      tags:
+      - user
+  /user/{id}/user_post:
+    get:
+      consumes:
+      - application/json
+      description: 查询到指定id用户的所有帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定用户的id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到他人的帖子."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询他人的帖子失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 指定用户的帖子
+      tags:
+      - user
+  /user/all_private_msg:
+    get:
+      consumes:
+      - application/json
+      description: 刷新所有发向我的私信
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"刷新私信成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"刷新私信失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 刷新所有私信
+      tags:
+      - user
+  /user/following:
+    delete:
+      consumes:
+      - application/json
+      description: 通过关注用户id和被关注用户id删除关注关系
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 被关注者id
+        in: query
+        name: followed_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"取消关注成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"取消关注失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 取消关注
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: 通过关注用户id和被关注用户id建立关注关系
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 被关注的用户的id
+        in: query
+        name: followed_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"关注成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"关注失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 关注
+      tags:
+      - user
+  /user/my_comments:
+    get:
+      consumes:
+      - application/json
+      description: 查询我的所有评论
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到我的评论."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"我的评论查询失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 我的评论
+      tags:
+      - user
+  /user/my_followers:
+    get:
+      consumes:
+      - application/json
+      description: 查询到关注我的用户
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到自己的粉丝."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询自己的粉丝失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 我的粉丝
+      tags:
+      - user
+  /user/my_following:
+    get:
+      consumes:
+      - application/json
+      description: 查询我关注的用户
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到自己关注的用户"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询自己关注的用户失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 我的关注
+      tags:
+      - user
+  /user/my_likes:
+    get:
+      consumes:
+      - application/json
+      description: 我点赞的所有的帖子
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到我的点赞的帖子."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"我点赞过的帖子查询失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 我的点赞
+      tags:
+      - user
+  /user/my_msg:
+    get:
+      consumes:
+      - application/json
+      description: 根据token中的id查我的User体
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到自己的信息."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询自己信息失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 我的信息
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: 上传我的新User更新我的信息
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 名字
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: 性别
+        in: formData
+        name: gender
+        required: true
+        type: string
+      - description: 签名
+        in: formData
+        name: signature
+        required: true
+        type: string
+      - description: 生日(2006-01-02)
+        in: formData
+        name: birthday
+        required: true
+        type: string
+      - description: 故乡
+        in: formData
+        name: hometown
+        required: true
+        type: string
+      - description: 年级
+        in: formData
+        name: grader
+        required: true
+        type: string
+      - description: 院系
+        in: formData
+        name: faculties
+        required: true
+        type: string
+      - description: 头像文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: yes/no(yes:修改头像 no:修改其他信息)
+        in: query
+        name: avatar_only
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"用户信息修改成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"用户信息修改失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 修改我的信息
+      tags:
+      - user
+  /user/my_outline:
+    get:
+      consumes:
+      - application/json
+      description: 通过id获取我的大致信息：User,动态数，关注数，粉丝数.
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"数据为:user,动态数,关注数,粉丝数."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: 我的大致信息
+      tags:
+      - user
+  /user/my_post:
+    get:
+      consumes:
+      - application/json
+      description: 查询到我所有发布过的帖子信息
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到自己的帖子"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"查询自己帖子失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 我的帖子
+      tags:
+      - user
+  /user/my_replies:
+    get:
+      consumes:
+      - application/json
+      description: 查询我的所有回复
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"查询到我的回复."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"我的回复查询失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 我的回复
+      tags:
+      - user
+  /user/private_msg/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 通过id刷新指定用户的向自己发的信息
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定用户的id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"刷新私信成功"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "410":
+          description: '{"msg":"刷新私信失败"}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 刷新指定私信
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: 通过id指定发私信的对象进行发私信
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 指定用户的id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 一个文件
+        in: formData
+        name: file
+        type: file
+      - description: yes/no(说明是否附带文件)
+        in: query
+        name: file_have
+        required: true
+        type: string
+      - description: yes/no(说明是否有文本)
+        in: query
+        name: content_have
+        required: true
+        type: string
+      - description: 私信的文本内容
+        in: formData
+        name: content
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"发送私信成功."}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: '{"msg":"发送私信失败."}'
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: 发私信
+      tags:
+      - user
+  /user/whether_follow:
+    get:
+      consumes:
+      - application/json
+      description: 通过用户id查询是否已经关注
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 用户id
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"msg":"yes"}'
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: 是否关注
+      tags:
+      - post
+schemes:
+- http
+swagger: "2.0"
