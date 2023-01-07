@@ -22,9 +22,9 @@ const docTemplate = `{
     "paths": {
         "/login": {
             "post": {
-                "description": "通过学号密码验证身份",
+                "description": "通过学号密码验证身份(username,password)",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -32,7 +32,7 @@ const docTemplate = `{
                 "tags": [
                     "login"
                 ],
-                "summary": "登录验证",
+                "summary": "登录验证(json)",
                 "parameters": [
                     {
                         "type": "string",
@@ -69,7 +69,7 @@ const docTemplate = `{
             "put": {
                 "description": "上传所有内容然后修改所有内容,",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -146,7 +146,7 @@ const docTemplate = `{
             "post": {
                 "description": "上传帖子的各项信息，发布帖子",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -216,7 +216,7 @@ const docTemplate = `{
             "delete": {
                 "description": "根据post_id删除指定帖子",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -259,9 +259,9 @@ const docTemplate = `{
         },
         "/post/comment": {
             "post": {
-                "description": "评论指定的帖子",
+                "description": "评论指定的帖子(post_id,private,content)",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -269,7 +269,7 @@ const docTemplate = `{
                 "tags": [
                     "post"
                 ],
-                "summary": "评论",
+                "summary": "评论（json)",
                 "parameters": [
                     {
                         "type": "string",
@@ -311,7 +311,7 @@ const docTemplate = `{
             "delete": {
                 "description": "根据comment_id删除指定评论",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -363,7 +363,7 @@ const docTemplate = `{
             "get": {
                 "description": "根据评论的id查询指定评论的所有回复",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -406,9 +406,9 @@ const docTemplate = `{
         },
         "/post/comment_reply": {
             "post": {
-                "description": "给指定评论添加回复",
+                "description": "给指定评论添加回复(comment_id,post_id,object,content,private)",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -416,7 +416,7 @@ const docTemplate = `{
                 "tags": [
                     "post"
                 ],
-                "summary": "回复",
+                "summary": "回复(json)",
                 "parameters": [
                     {
                         "type": "string",
@@ -465,7 +465,7 @@ const docTemplate = `{
             "delete": {
                 "description": "根据reply_id删除指定帖子",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -510,7 +510,7 @@ const docTemplate = `{
             "get": {
                 "description": "根据帖子的id查询指定帖子的所有评论(不包括评论的回复)",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -555,7 +555,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询关注用户的帖子（所有）",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -593,7 +593,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询最新发布的帖子，返回的开始点和数量由query参数决定",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -645,7 +645,7 @@ const docTemplate = `{
             "post": {
                 "description": "点赞指定的帖子",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -688,7 +688,7 @@ const docTemplate = `{
             "delete": {
                 "description": "通过帖子id取消点赞",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -729,11 +729,11 @@ const docTemplate = `{
                 }
             }
         },
-        "/post/recommendations/{type}": {
+        "/post/recommendations": {
             "get": {
-                "description": "查询点赞最多的帖子，返回的开始点和数量由query参数决定，类型有type参数决定",
+                "description": "查询点赞最多的帖子，返回的开始点和数量由query参数决定，类型有type参数决定(type,start_time,end_time,start_index,length)",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -741,7 +741,7 @@ const docTemplate = `{
                 "tags": [
                     "post"
                 ],
-                "summary": "推荐的帖子",
+                "summary": "推荐的帖子(json)",
                 "parameters": [
                     {
                         "type": "string",
@@ -792,7 +792,7 @@ const docTemplate = `{
             "get": {
                 "description": "通过关键词搜索标题有关键词的帖子",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -837,7 +837,7 @@ const docTemplate = `{
             "get": {
                 "description": "通过帖子id查询是否已经点赞",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -876,7 +876,7 @@ const docTemplate = `{
             "get": {
                 "description": "通过帖子的id获得某个帖子的详细信息",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -921,7 +921,7 @@ const docTemplate = `{
             "get": {
                 "description": "刷新所有发向我的私信",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -941,13 +941,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"msg\":\"刷新私信成功\"}",
+                        "description": "{\"msg\":\"刷新所有私信成功\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "410": {
-                        "description": "{\"msg\":\"刷新私信失败\"}",
+                        "description": "{\"msg\":\"刷新所有私信失败\"}",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -959,7 +959,7 @@ const docTemplate = `{
             "post": {
                 "description": "通过关注用户id和被关注用户id建立关注关系",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1002,7 +1002,7 @@ const docTemplate = `{
             "delete": {
                 "description": "通过关注用户id和被关注用户id删除关注关系",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1043,11 +1043,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/likes_of_my_post": {
+            "get": {
+                "description": "刷新后获得我的贴子的点赞信心",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "点赞通知",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"刷新点赞我的成功.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "410": {
+                        "description": "{\"msg\":\"刷新点赞我的失败.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/my_comments": {
             "get": {
                 "description": "查询我的所有评论",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1085,7 +1123,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询到关注我的用户",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1123,7 +1161,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询我关注的用户",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1161,7 +1199,7 @@ const docTemplate = `{
             "get": {
                 "description": "我点赞的所有的帖子",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1199,7 +1237,7 @@ const docTemplate = `{
             "get": {
                 "description": "根据token中的id查我的User体",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1235,7 +1273,7 @@ const docTemplate = `{
             "put": {
                 "description": "上传我的新User更新我的信息",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1336,7 +1374,7 @@ const docTemplate = `{
             "get": {
                 "description": "通过id获取我的大致信息：User,动态数，关注数，粉丝数.",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1368,7 +1406,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询到我所有发布过的帖子信息",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1406,7 +1444,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询我的所有回复",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1444,7 +1482,7 @@ const docTemplate = `{
             "get": {
                 "description": "通过id刷新指定用户的向自己发的信息",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1487,7 +1525,7 @@ const docTemplate = `{
             "post": {
                 "description": "通过id指定发私信的对象进行发私信",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1554,11 +1592,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/replies": {
+            "get": {
+                "description": "获得我的贴子下面的评论和回复所有新增信息和他人贴子下面回复对象是我的信息",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "回复通知",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"msg\":\"查询回复成功.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "410": {
+                        "description": "{\"msg\":\"查询回复失败.\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/whether_follow": {
             "get": {
                 "description": "通过用户id查询是否已经关注",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1597,7 +1673,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询指定id用户的粉丝列表",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1642,7 +1718,7 @@ const docTemplate = `{
             "get": {
                 "description": "指定id用户的关注列表",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1687,7 +1763,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询指定id用户的信息",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1732,7 +1808,7 @@ const docTemplate = `{
             "get": {
                 "description": "指定id用户的User,动态数,关注数,粉丝数.",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1771,7 +1847,7 @@ const docTemplate = `{
             "get": {
                 "description": "查询到指定id用户的所有帖子",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"

@@ -24,14 +24,16 @@ func Register(r *gin.Engine) {
 		u.POST("/private_msg/:id", user.PrivateMsgSend) //给某人发信息   ok
 		u.PUT("/my_msg", user.MyMsgUpdate)              //更新我的资料  ok
 
-		u.GET("/my_outline", user.Outline)     //我的大致信息 ok
-		u.GET("/my_post", user.MyPost)         //我的帖子 ok
-		u.GET("/my_following", user.Following) //我的关注  ok
-		u.GET("/my_followers", user.Followers) //我的粉丝  ok
-		u.GET("/my_msg", user.MyMsg)           //我的详细信息，在编辑页面  ok
-		u.GET("/my_replies", user.MyReplies)   //我的回复 ok
-		u.GET("/my_comments", user.MyComments) //我的评论 ok
-		u.GET("/my_likes", user.MyLikesPost)   //我的点赞  ok
+		u.GET("/my_outline", user.Outline)              //我的大致信息 ok
+		u.GET("/my_post", user.MyPost)                  //我的帖子 ok
+		u.GET("/my_following", user.Following)          //我的关注  ok
+		u.GET("/my_followers", user.Followers)          //我的粉丝  ok
+		u.GET("/my_msg", user.MyMsg)                    //我的详细信息，在编辑页面  ok
+		u.GET("/my_replies", user.MyReplies)            //我的回复 ok
+		u.GET("/my_comments", user.MyComments)          //我的评论 ok
+		u.GET("/my_likes", user.MyLikesPost)            //我的点赞  ok
+		u.GET("/likes_of_my_post", user.LikesOfMyPosts) //刷新点赞我的帖子的消息通知
+		u.GET("/replies", user.RepliesToMe)             //刷新回复评论我的消息通知
 
 		u.GET("/whether_follow", user.WhetherFollow)     //他人是否被我关注
 		u.GET("/:id/user_outline", user.UserOutline)     //他人的大致信息  ok
@@ -43,14 +45,14 @@ func Register(r *gin.Engine) {
 	p := r.Group("/api/v1/post")
 	p.Use(Midware.TokenMiddleWare)
 	{
-		p.GET("/search", post.SearchPosts)                    //搜索帖子 ok
-		p.GET("/latest", post.Latest)                         //查看最新帖子 ok
-		p.GET("/following", post.Following)                   //查看关注的人的帖子 ok
-		p.GET("/recommendations/:type", post.Recommendations) //查看推荐的帖子 ok
-		p.GET("/comments/:post_id", post.Comments)            //查看某条帖子的评论 ok
-		p.GET("/comment_replies/:comment_id", post.Reply)     //查某个评论的回复 ok
-		p.GET("/:id", post.QueryOnePosts)                     //查找某一条帖子信息 ok
-		p.GET("/whether_like", post.WhetherLike)              //查询是否已点赞 ok
+		p.GET("/search", post.SearchPosts)                //搜索帖子 ok
+		p.GET("/latest", post.Latest)                     //查看最新帖子 ok
+		p.GET("/following", post.Following)               //查看关注的人的帖子 ok
+		p.GET("/recommendations", post.Recommendations)   //查看推荐的帖子 ok
+		p.GET("/comments/:post_id", post.Comments)        //查看某条帖子的评论 ok
+		p.GET("/comment_replies/:comment_id", post.Reply) //查某个评论的回复 ok
+		p.GET("/:id", post.QueryOnePosts)                 //查找某一条帖子信息 ok
+		p.GET("/whether_like", post.WhetherLike)          //查询是否已点赞 ok
 
 		p.POST("", post.CreatePost)                  //发布帖子  ok
 		p.DELETE("", post.DeletePost)                //删除帖子 ok
