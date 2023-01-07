@@ -37,13 +37,19 @@ type Comment struct {
 	PostId  uint   `form:"post_id" json:"post_id"`
 	UserId  uint   `json:"user_id" form:"user_id"`
 	Content string `json:"content" form:"content"`
+	Private bool   `json:"private" form:"private"`
+	Status  int    `json:"status" form:"status"`
 }
 type Reply struct {
 	gorm.Model
-	FromWho   uint   `json:"from_who" form:"from_who"`
-	CommentId uint   `json:"comment_id" form:"comment_id"`
-	Object    uint   `json:"object" form:"object"`
-	Content   string `json:"content" form:"content"`
+	FromWho        uint   `json:"from_who" form:"from_who"`
+	CommentId      uint   `json:"comment_id" form:"comment_id"`
+	PostId         uint   `json:"post_id" form:"post_id"` //new
+	Object         uint   `json:"object" form:"object"`
+	Content        string `json:"content" form:"content"`
+	Private        bool   `json:"private" form:"private"`
+	StatusToAuthor int    `json:"status_to_author" form:"status_to_author"`
+	StatusToObject int    `json:"status_to_object" form:"status_to_object"`
 }
 type Relationship struct {
 	gorm.Model
@@ -63,4 +69,5 @@ type Likes struct {
 	gorm.Model
 	PostId uint `json:"post_id" form:"post_id"`
 	UserId uint `json:"user_id" form:"user_id"`
+	Status int  `json:"status" form:"status"`
 }

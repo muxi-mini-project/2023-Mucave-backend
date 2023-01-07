@@ -10,10 +10,10 @@ import (
 	"time"
 )
 
-// @Summary 登录验证
-// @Description  通过学号密码验证身份
+// @Summary 登录验证(json)
+// @Description  通过学号密码验证身份(username,password)
 // @Tags login
-// @Accept application/json
+// @Accept multipart/form-data
 // @Produce application/json
 // @Param  username  formData string true "学号"
 // @Param  password  formData string true "密码"
@@ -21,8 +21,9 @@ import (
 // @Failure 400 {object} handler.Error  "{"msg":""Invalid username or password}"
 // @Router /login [POST]
 func Login(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
+	data := service.RawToMap(c) //改:form TO json
+	username := data["username"]
+	password := data["password"]
 	s := service.LoginRequest(username, password)
 	if s == "" {
 		c.JSON(401, gin.H{
@@ -45,7 +46,7 @@ func Login(c *gin.Context) {
 // @Summary  关注
 // @Description 通过关注用户id和被关注用户id建立关注关系
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param followed_id query string true "被关注的用户的id"
@@ -69,7 +70,7 @@ func Follow(c *gin.Context) {
 // @Summary  取消关注
 // @Description  通过关注用户id和被关注用户id删除关注关系
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  followed_id  query string true "被关注者id"
@@ -88,7 +89,7 @@ func UnFollow(c *gin.Context) {
 // @Summary 我的大致信息
 // @Description  通过id获取我的大致信息：User,动态数，关注数，粉丝数.
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"数据为:user,动态数,关注数,粉丝数."}"
@@ -102,7 +103,7 @@ func Outline(c *gin.Context) {
 // @Summary 我的帖子
 // @Description   查询到我所有发布过的帖子信息
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"查询到自己的帖子"}"
@@ -121,7 +122,7 @@ func MyPost(c *gin.Context) {
 // @Summary 我的关注
 // @Description  查询我关注的用户
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"查询到自己关注的用户"}"
@@ -140,7 +141,7 @@ func Following(c *gin.Context) {
 // @Summary 我的粉丝
 // @Description 查询到关注我的用户
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"查询到自己的粉丝."}"
@@ -159,7 +160,7 @@ func Followers(c *gin.Context) {
 // @Summary 指定用户的大致信息
 // @Description  指定id用户的User,动态数,关注数,粉丝数.
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
@@ -175,7 +176,7 @@ func UserOutline(c *gin.Context) {
 // @Summary 指定用户的帖子
 // @Description  查询到指定id用户的所有帖子
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
@@ -195,7 +196,7 @@ func UserPost(c *gin.Context) {
 // @Summary 用户的粉丝
 // @Description  查询指定id用户的粉丝列表
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
@@ -215,7 +216,7 @@ func UserFollowers(c *gin.Context) {
 // @Summary 用户的关注
 // @Description  指定id用户的关注列表
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
@@ -235,7 +236,7 @@ func UserFollowing(c *gin.Context) {
 // @Summary 用户信息
 // @Description 查询指定id用户的信息
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
@@ -256,7 +257,7 @@ func UserMsg(c *gin.Context) {
 // @Summary 我的信息
 // @Description 根据token中的id查我的User体
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"查询到自己的信息."}"
@@ -275,7 +276,7 @@ func MyMsg(c *gin.Context) {
 // @Summary 发私信
 // @Description 通过id指定发私信的对象进行发私信
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
@@ -307,7 +308,7 @@ func PrivateMsgSend(c *gin.Context) {
 // @Summary 刷新指定私信
 // @Description  通过id刷新指定用户的向自己发的信息
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  id  path string true "指定用户的id"
@@ -326,7 +327,7 @@ func PrivateMsg(c *gin.Context) {
 // @Summary 刷新所有私信
 // @Description  刷新所有发向我的私信
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"刷新所有私信成功"}"
@@ -348,7 +349,7 @@ func AllPrivateMsg(c *gin.Context) {
 // @Summary 修改我的信息
 // @Description  上传我的新User更新我的信息
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param  name  formData string true "名字"
@@ -391,7 +392,7 @@ func MyMsgUpdate(c *gin.Context) {
 // @Summary 我的评论
 // @Description  查询我的所有评论
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"查询到我的评论."}"
@@ -410,7 +411,7 @@ func MyComments(c *gin.Context) {
 // @Summary 我的回复
 // @Description  查询我的所有回复
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"查询到我的回复."}"
@@ -429,7 +430,7 @@ func MyReplies(c *gin.Context) {
 // @Summary 我的点赞
 // @Description 我点赞的所有的帖子
 // @Tags user
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Success 200 {object} handler.Response "{"msg":"查询到我的点赞的帖子."}"
@@ -448,7 +449,7 @@ func MyLikesPost(c *gin.Context) {
 // @Summary  是否关注
 // @Description 通过用户id查询是否已经关注
 // @Tags post
-// @Accept application/json
+// @Accept  multipart/form-data
 // @Produce application/json
 // @Param Authorization header string true "token"
 // @Param user_id query integer true "用户id"
@@ -462,4 +463,46 @@ func WhetherFollow(c *gin.Context) {
 		return
 	}
 	handler.SendResponse(c, "yes", nil)
+}
+
+// @Summary  点赞通知
+// @Description  刷新后获得我的贴子的点赞信心
+// @Tags post
+// @Accept  multipart/form-data
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Failure 410 {object} handler.Error "{"msg":"刷新点赞我的失败."}"
+// @Success 200 {object} handler.Response "{"msg":"刷新点赞我的成功."}"
+// @Router /user/likes_of_my_post [GET]
+func LikesOfMyPosts(c *gin.Context) {
+	posts, _ := model.QueryOneUserPosts(service.GetId(c))
+	likes, err := model.QueryLikesSend(posts)
+	if err != nil {
+		handler.SendError(c, 410, "刷新点赞我的失败.")
+		return
+	}
+	handler.SendResponse(c, "刷新点赞我的成功.", likes)
+}
+
+// @Summary  回复通知
+// @Description  获得我的贴子下面的评论和回复所有新增信息和他人贴子下面回复对象是我的信息
+// @Tags post
+// @Accept  multipart/form-data
+// @Produce application/json
+// @Param Authorization header string true "token"
+// @Failure 410 {object} handler.Error "{"msg":"查询回复失败."}"
+// @Success 200 {object} handler.Response "{"msg":"查询回复成功."}"
+// @Router /user/replies [GET]
+func RepliesToMe(c *gin.Context) {
+	posts, _ := model.QueryOneUserPosts(service.GetId(c))
+	comments, err1 := model.QueryCommentSend(posts)
+	replies, err2 := model.QueryRepliesSend(posts, service.GetId(c))
+	if err1 != nil || err2 != nil {
+		handler.SendError(c, 410, "查询回复失败.")
+		return
+	}
+	handler.SendResponse(c, "查询回复成功.", gin.H{
+		"comments": comments,
+		"replies":  replies,
+	})
 }

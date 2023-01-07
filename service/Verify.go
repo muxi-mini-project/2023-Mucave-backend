@@ -22,8 +22,8 @@ func CreateToken(UserId uint) (string, error) {
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(), //过期时间
 			IssuedAt:  time.Now().Unix(),
-			Issuer:    "43.138.61.49", // 签名颁发者
-			Subject:   "华小圈.",         //签名主题人
+			Issuer:    "43.138.61.49", // 签名颁发者 //改
+			Subject:   "华小圈.",         //签名主题人 //改
 		},
 	}
 	// 使用指定的签名方法创建签名对象

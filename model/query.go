@@ -12,9 +12,9 @@ func QueryNewPosts(start interface{}, length interface{}) ([]Post, error) {
 	err := DB.Model(&Post{}).Order("id desc").Offset(Atoi(start)).Limit(Atoi(length)).Find(&posts).Error
 	return posts, err
 }
-func QueryHotPosts(start interface{}, length interface{}, ty string) ([]Post, error) {
+func QueryHotPosts(startIndex interface{}, length interface{}, ty string, startTime interface{}, endTime interface{}) ([]Post, error) {
 	var posts []Post
-	err := DB.Model(&Post{}).Where("type=?", ty).Order("likes desc").Offset(Atoi(start)).Limit(Atoi(length)).Find(&posts).Error
+	err := DB.Model(&Post{}).Where("type=? && created_at between ? AND ?", ty, startTime, endTime).Order("likes desc").Offset(Atoi(startIndex)).Limit(Atoi(length)).Find(&posts).Error
 	return posts, err
 }
 func QueryId(username string) (uint, error) {
@@ -51,14 +51,20 @@ func QueryIdUser(id interface{}) (User, error) {
 	err := DB.Where("id = ?", id).Take(&user).Error
 	return user, err
 }
-func QueryCommentByPostId(id string) ([]Comment, error) {
+func QueryCommentByPostId(id string, my bool) ([]Comment, error) {
 	var comments []Comment
-	err := DB.Where("post_id = ?", id).Order("created_at desc").Find(&comments).Error
+	var err error
+	if my {
+		err = DB.Where("post_id = ?", id).Order("id desc").Find(&comments).Error
+	} else {
+		err = DB.Where("post_id = ? AND private = 0", id).Order("id desc").Find(&comments).Error
+	}
 	return comments, err
 }
-func QueryReplyByCommentId(id string) ([]Reply, error) {
+
+func QueryReplyByCommentId(commentId string, myId interface{}) ([]Reply, error) {
 	var replies []Reply
-	err := DB.Where("comment_id = ?", id).Order("created_at desc").Find(&replies).Error
+	err := DB.Where("comment_id = ? AND private = 0 || object = ?", commentId, myId).Order("created_at desc").Find(&replies).Error
 	return replies, err
 }
 
@@ -146,4 +152,36 @@ func QueryOneUserPosts(userId interface{}) ([]Post, error) {
 	var posts []Post
 	err := DB.Where("author_id=?", userId).Find(&posts).Error
 	return posts, err
+}
+
+func QueryLikesSend(myPosts []Post) ([]Likes, error) {
+	var postIds []uint
+	for _, post := range myPosts {
+		postIds = append(postIds, post.ID)
+	}
+	var likes []Likes
+	err := DB.Model(&Likes{}).Where("post_id in (?) AND status = 1", postIds).Order("id desc").Find(&likes).Update("status", "0").Error
+	return likes, err
+}
+
+func QueryCommentSend(myPosts []Post) ([]Comment, error) {
+	var postIds []uint
+	for _, post := range myPosts {
+		postIds = append(postIds, post.ID)
+	}
+	var comments []Comment
+	err := DB.Model(&Comment{}).Where("post_id in (?) AND status = 1 ", postIds).Order("id desc").Find(&comments).Update("status", "0").Error
+	return comments, err
+}
+
+func QueryRepliesSend(myPosts []Post, myId interface{}) ([]Reply, error) {
+	var postIds []uint
+	for _, post := range myPosts {
+		postIds = append(postIds, post.ID)
+	}
+	var replies1 []Reply
+	err := DB.Model(&Reply{}).Where("post_id in (?) AND status_to_author = 1", postIds).Order("id desc").Find(&replies1).Update("status_to_author", "0").Error
+	var replies2 []Reply
+	err = DB.Model(&Reply{}).Where("object = ? AND status_to_object = 1", myId).Order("id desc").Find(&replies2).Update("status_to_object", "0").Error
+	return append(replies1, replies2...), err
 }
