@@ -2,14 +2,13 @@ package model
 
 import (
 	"gorm.io/gorm"
-	"time"
 )
 
 func CreateUser(username string) User {
 	var user1 User
 	user := User{
 		UserName: username,
-		Birthday: time.Now(),
+		Birthday: "2023-01-09",
 	}
 	DB.Create(&user).Find(&user1)
 	return user1

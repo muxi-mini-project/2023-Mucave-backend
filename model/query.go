@@ -1,20 +1,13 @@
 package model
 
-import "strconv"
-
-func Atoi(i interface{}) int {
-	s, _ := i.(string)
-	a, _ := strconv.Atoi(s)
-	return a
-}
-func QueryNewPosts(start interface{}, length interface{}) ([]Post, error) {
+func QueryNewPosts(start int, length int) ([]Post, error) {
 	var posts []Post
-	err := DB.Model(&Post{}).Order("id desc").Offset(Atoi(start)).Limit(Atoi(length)).Find(&posts).Error
+	err := DB.Model(&Post{}).Order("id desc").Offset(start).Limit(length).Find(&posts).Error
 	return posts, err
 }
-func QueryHotPosts(startIndex interface{}, length interface{}, ty string, startTime interface{}, endTime interface{}) ([]Post, error) {
+func QueryHotPosts(startIndex int, length int, ty string, startTime string, endTime string) ([]Post, error) {
 	var posts []Post
-	err := DB.Model(&Post{}).Where("type=? && created_at between ? AND ?", ty, startTime, endTime).Order("likes desc").Offset(Atoi(startIndex)).Limit(Atoi(length)).Find(&posts).Error
+	err := DB.Model(&Post{}).Where("type=? && created_at between ? AND ?", ty, startTime, endTime).Order("likes desc").Offset(startIndex).Limit(length).Find(&posts).Error
 	return posts, err
 }
 func QueryId(username string) (uint, error) {
