@@ -30,11 +30,11 @@ func Register(r *gin.Engine) {
 		u.GET("/replies", user.RepliesToMe)             //刷新回复评论我的消息通知
 
 		u.GET("/whether_follow", user.WhetherFollow)     //他人是否被我关注
-		u.GET("/:id/user_outline", user.UserOutline)     //他人的大致信息 1
-		u.GET("/:id/user_post", user.UserPost)           //他人的帖子 1
-		u.GET("/:id/user_followers", user.UserFollowers) //他人的粉丝 1
-		u.GET("/:id/user_following", user.UserFollowing) //他人的关注 1
-		u.GET("/:id/user_msg", user.UserMsg)             //他人的详细信息，只读 1
+		u.GET("/:id/user_outline", user.UserOutline)     //用户大致信息 
+		u.GET("/:id/user_post", user.UserPost)           //用户的帖子
+		u.GET("/:id/user_followers", user.UserFollowers) //用户的粉丝 
+		u.GET("/:id/user_following", user.UserFollowing) //用户的关注 
+		u.GET("/:id/user_msg", user.UserMsg)             //用户的详细信息，只读 
 	}
 	p := r.Group("/api/v1/post")
 	p.Use(Midware.TokenMiddleWare)
