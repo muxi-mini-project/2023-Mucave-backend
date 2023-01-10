@@ -85,90 +85,26 @@ func UnFollow(c *gin.Context) {
 	handler.SendResponse(c, "取消关注成功", nil)
 }
 
-// @Summary 我的大致信息
-// @Description  通过id获取我的大致信息：User,动态数，关注数，粉丝数.
-// @Tags user
-// @Accept  application/json
-// @Produce application/json
-// @Param Authorization header string true "token"
-// @Success 200 {object} handler.Response "{"msg":"数据为:user,动态数,关注数,粉丝数."}"
-// @Router /user/my_outline [GET]
-func Outline(c *gin.Context) {
-	id, _ := c.Get("UserId")
-	outline := model.QueryOutline(id)
-	handler.SendResponse(c, "数据为:user,动态数,关注数,粉丝数.", outline)
-}
-
-// @Summary 我的帖子
-// @Description   查询到我所有发布过的帖子信息
-// @Tags user
-// @Accept  application/json
-// @Produce application/json
-// @Param Authorization header string true "token"
-// @Success 200 {object} []handler.Post "{"msg":"查询到自己的帖子"}"
-// @Failure 410 {object} handler.Error  "{"msg":"查询自己帖子失败"}"
-// @Router /user/my_post [GET]
-func MyPost(c *gin.Context) {
-	id, _ := c.Get("UserId")
-	posts, err := model.QueryOneUserPosts(id)
-	if err != nil {
-		handler.SendError(c, 410, "查询自己帖子失败.")
-		return
-	}
-	handler.SendResponse(c, "查询到自己的帖子.", posts)
-}
-
-// @Summary 我的关注
-// @Description  查询我关注的用户
-// @Tags user
-// @Accept  application/json
-// @Produce application/json
-// @Param Authorization header string true "token"
-// @Success 200 {object} []handler.User "{"msg":"查询到自己关注的用户"}"
-// @Failure 410 {object} handler.Error  "{"msg":"查询自己关注的用户失败"}"
-// @Router /user/my_following [GET]
-func Following(c *gin.Context) {
-	id, _ := c.Get("UserId")
-	users, err := model.QueryFollowing(id)
-	if err != nil {
-		handler.SendError(c, 410, "查询自己关注的用户失败.")
-		return
-	}
-	handler.SendResponse(c, "查询到自己关注的用户", users)
-}
-
-// @Summary 我的粉丝
-// @Description 查询到关注我的用户
-// @Tags user
-// @Accept  application/json
-// @Produce application/json
-// @Param Authorization header string true "token"
-// @Success 200 {object} []handler.User "{"msg":"查询到自己的粉丝."}"
-// @Failure 410 {object} handler.Error  "{"msg":"查询自己的粉丝失败."}"
-// @Router /user/my_followers [GET]
-func Followers(c *gin.Context) {
-	id, _ := c.Get("UserId")
-	users, err := model.QueryFollowers(id)
-	if err != nil {
-		handler.SendError(c, 410, "查询自己的粉丝失败.")
-		return
-	}
-	handler.SendResponse(c, "查询到自己的粉丝", users)
-}
-
 // @Summary 指定用户的大致信息
 // @Description  指定id用户的User,动态数,关注数,粉丝数.
 // @Tags user
 // @Accept  application/json
 // @Produce application/json
 // @Param Authorization header string true "token"
-// @Param  id  path string true "指定用户的id"
+// @Param  id  path string true "指定用户的id，为0是查询自己"
 // @Success 200 {object} handler.Response "{"msg":"数据为:user,动态数,关注数,粉丝数."}"
 // @Router /user/{id}/user_outline [GET]
 func UserOutline(c *gin.Context) {
-	id := c.Param("id")
-	outline := model.QueryOutline(id)
-	outline.User.UserName = "" //change
+	var ID interface{}
+	var outline model.Outline
+	if c.Param("id") == "0" {
+		ID, _ = c.Get("UserId")
+		outline = model.QueryOutline(ID)
+	} else {
+		ID = c.Param("id")
+		outline = model.QueryOutline(ID)
+		outline.User.UserName = ""
+	}
 	handler.SendResponse(c, "数据为:user,动态数,关注数,粉丝数.", outline)
 }
 
@@ -178,13 +114,18 @@ func UserOutline(c *gin.Context) {
 // @Accept  application/json
 // @Produce application/json
 // @Param Authorization header string true "token"
-// @Param  id  path string true "指定用户的id"
+// @Param  id  path string true "指定用户的id，为0是查询自己"
 // @Success 200 {object} []handler.Post "{"msg":"查询到他人的帖子."}"
 // @Failure 410 {object} handler.Error  "{"msg":"查询他人的帖子失败."}"
 // @Router /user/{id}/user_post [GET]
 func UserPost(c *gin.Context) {
-	id := c.Param("id")
-	posts, err := model.QueryOneUserPosts(id)
+	var ID interface{}
+	if c.Param("id") == "0" {
+		ID, _ = c.Get("UserId")
+	} else {
+		ID = c.Param("id")
+	}
+	posts, err := model.QueryOneUserPosts(ID)
 	if err != nil {
 		handler.SendError(c, 410, "查询他人的帖子失败.")
 		return
@@ -198,13 +139,18 @@ func UserPost(c *gin.Context) {
 // @Accept  application/json
 // @Produce application/json
 // @Param Authorization header string true "token"
-// @Param  id  path string true "指定用户的id"
+// @Param  id  path string true "指定用户的id，为0是查询自己"
 // @Success 200 {object} []handler.User "{"msg":"查询到他人的粉丝."}"
 // @Failure 410 {object} handler.Error  "{"msg":"查询他人的粉丝失败."}"
 // @Router /user/{id}/user_followers [GET]
 func UserFollowers(c *gin.Context) {
-	id := c.Param("id")
-	users, err := model.QueryFollowers(id)
+	var ID interface{}
+	if c.Param("id") == "0" {
+		ID, _ = c.Get("UserId")
+	} else {
+		ID = c.Param("id")
+	}
+	users, err := model.QueryFollowers(ID)
 	if err != nil {
 		handler.SendError(c, 410, "查询他人的粉丝失败.")
 		return
@@ -218,13 +164,18 @@ func UserFollowers(c *gin.Context) {
 // @Accept  application/json
 // @Produce application/json
 // @Param Authorization header string true "token"
-// @Param  id  path string true "指定用户的id"
+// @Param  id  path string true "指定用户的id，为0是查询自己"
 // @Success 200 {object} []handler.User "{"msg":"查询到他人关注的用户."}"
 // @Failure 410 {object} handler.Error  "{"msg":"查询他人关注的用户失败."}"
 // @Router /user/{id}/user_following [GET]
 func UserFollowing(c *gin.Context) {
-	id := c.Param("id")
-	users, err := model.QueryFollowing(id)
+	var ID interface{}
+	if c.Param("id") == "0" {
+		ID, _ = c.Get("UserId")
+	} else {
+		ID = c.Param("id")
+	}
+	users, err := model.QueryFollowing(ID)
 	if err != nil {
 		handler.SendError(c, 410, "查询他人关注的用户失败.")
 		return
@@ -238,38 +189,27 @@ func UserFollowing(c *gin.Context) {
 // @Accept  application/json
 // @Produce application/json
 // @Param Authorization header string true "token"
-// @Param  id  path string true "指定用户的id"
+// @Param  id  path string true "指定用户的id，为0是查询自己"
 // @Success 200 {object} handler.User "{"msg":"查询到指定的用户."}"
 // @Failure 410 {object} handler.Error  "{"msg":"查询指定用户信息失败."}"
 // @Router /user/{id}/user_msg [GET]
 func UserMsg(c *gin.Context) {
-	id := c.Param("id")
-	user, err := model.QueryIdUser(id)
-	user.UserName = "" //改
+	var ID interface{}
+	var user model.User
+	var err error
+	if c.Param("id") == "0" {
+		ID, _ = c.Get("UserId")
+		user, err = model.QueryIdUser(ID)
+	} else {
+		ID = c.Param("id")
+		user, err = model.QueryIdUser(ID)
+		user.UserName = "" //改
+	}
 	if err != nil {
 		handler.SendError(c, 410, "查询指定用户信息失败.")
 		return
 	}
 	handler.SendResponse(c, "查询到指定的用户.", user)
-}
-
-// @Summary 我的信息
-// @Description 根据token中的id查我的User体
-// @Tags user
-// @Accept  application/json
-// @Produce application/json
-// @Param Authorization header string true "token"
-// @Success 200 {object} handler.User "{"msg":"查询到自己的信息."}"
-// @Failure 410 {object} handler.Error  "{"msg":"查询自己信息失败."}"
-// @Router /user/my_msg [GET]
-func MyMsg(c *gin.Context) {
-	id, _ := c.Get("UserId")
-	user, err := model.QueryIdUser(id)
-	if err != nil {
-		handler.SendError(c, 410, "查询自己信息失败.")
-		return
-	}
-	handler.SendResponse(c, "查询到自己的信息.", user)
 }
 
 // @Summary 发私信

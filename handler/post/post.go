@@ -7,6 +7,7 @@ import (
 	"Mucave/service"
 	"github.com/gin-gonic/gin"
 	_ "gorm.io/gorm"
+	"log"
 	"strconv"
 )
 
@@ -22,11 +23,13 @@ import (
 // @Failure 410 {object} handler.Error  "{"msg":"最新帖子查询失败"}"
 // @Router /post/latest [GET]
 func Latest(c *gin.Context) {
-	start, _ := strconv.Atoi(c.Query("start"))
-	length, _ := strconv.Atoi(c.Query("length"))
-	posts, err := model.QueryNewPosts(start, length)
-	if err != nil {
+	start, err1 := strconv.Atoi(c.Query("start"))
+	length, err2 := strconv.Atoi(c.Query("length"))
+	posts, err3 := model.QueryNewPosts(start, length)
+	if err1 != nil || err2 != nil || err3 != nil {
 		handler.SendError(c, 410, "最新的帖子查询失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err1, err2, err3)
 		return
 	}
 	handler.SendResponse(c, "查询到最新帖子（数组）.", posts)
@@ -48,6 +51,8 @@ func Recommendations(c *gin.Context) {
 	posts, err2 := model.QueryHotPosts(searchData.StartIndex, searchData.Length, searchData.Type, searchData.StartTime, searchData.EndTime)
 	if err2 != nil || err1 != nil {
 		handler.SendError(c, 410, "推荐帖子查询失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err1, err2)
 		return
 	}
 	handler.SendResponse(c, "查询到点赞多的的帖子组", posts)
@@ -68,11 +73,15 @@ func Following(c *gin.Context) {
 	users, err := model.QueryFollowing(UserId)
 	if err != nil {
 		handler.SendError(c, 410, "查询关注的用户失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	posts, err := model.QueryUserPosts(users)
 	if err != nil {
 		handler.SendError(c, 410, "查询关注用户的帖子失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "查询到关注的用户的帖子的数组", posts)
@@ -93,6 +102,8 @@ func QueryOnePosts(c *gin.Context) {
 	post, err := model.QueryIdPost(id)
 	if err != nil {
 		handler.SendError(c, 410, "指定的帖子查询失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "查询到指定的帖子", post)
@@ -114,6 +125,8 @@ func Comments(c *gin.Context) {
 	comments, err := model.QueryCommentByPostId(postId, IsMine)
 	if err != nil {
 		handler.SendError(c, 410, "帖子的评论查询失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "查询到帖子的评论.", comments)
@@ -134,6 +147,8 @@ func Reply(c *gin.Context) {
 	replies, err := model.QueryReplyByCommentId(commentId, service.GetId(c))
 	if err != nil {
 		handler.SendError(c, 410, "查询评论的回复失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "查询到评论的回复", replies)
@@ -172,6 +187,8 @@ func CreatePost(c *gin.Context) {
 	err2 := model.CreatePost(post)
 	if err1 != nil || err2 != nil {
 		handler.SendError(c, 400, "新建帖子失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err1, err2)
 		return
 	}
 	handler.SendResponse(c, "发布成功", nil)
@@ -195,6 +212,8 @@ func AddReply(c *gin.Context) {
 	err2 := model.CreateReply(reply)
 	if err1 != nil || err2 != nil {
 		handler.SendError(c, 400, "回复失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err1, err2)
 		return
 	}
 	handler.SendResponse(c, "回复成功.", nil)
@@ -223,6 +242,8 @@ func AddComment(c *gin.Context) {
 	comment.UserId = service.GetId(c)
 	err2 := model.CreateComment(comment)
 	if err1 != nil || err2 != nil {
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err1, err2)
 		handler.SendError(c, 400, "评论失败.")
 		return
 	}
@@ -249,6 +270,8 @@ func AddLikes(c *gin.Context) {
 	err := model.CreateLikes(likes)
 	if err != nil {
 		handler.SendError(c, 400, "点赞失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "点赞成功", nil)
@@ -288,6 +311,8 @@ func DeleteLikes(c *gin.Context) {
 	err := model.DeleteLikes(service.GetId(c), c.Query("post_id"))
 	if err != nil {
 		handler.SendError(c, 400, "取消点赞失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "取消点赞成功", nil)
@@ -330,6 +355,8 @@ func UpdatePost(c *gin.Context) {
 	err2 := model.UpdatePost(c.Query("file"), post, c.Query("post_id"))
 	if err1 != nil || err2 != nil {
 		handler.SendError(c, 400, "修改帖子失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err1, err2)
 		return
 	}
 	handler.SendResponse(c, "修改帖子成功", nil)
@@ -353,6 +380,8 @@ func DeletePost(c *gin.Context) {
 	err := model.DeletePost(c.Query("post_id"))
 	if err != nil {
 		handler.SendError(c, 400, "删帖失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "删帖成功.", nil)
@@ -373,6 +402,8 @@ func SearchPosts(c *gin.Context) {
 	posts, err := model.SearchPosts(point)
 	if err != nil {
 		handler.SendError(c, 410, "搜索失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "搜索成功.", posts)
@@ -397,6 +428,8 @@ func DeleteComment(c *gin.Context) {
 	err := model.DeleteComment(c.Query("comment_id"), c.Query("post_id"))
 	if err != nil {
 		handler.SendError(c, 400, "删评论失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "删评论成功.", nil)
@@ -420,6 +453,8 @@ func DeleteReply(c *gin.Context) {
 	err := model.DeleteReply(c.Query("reply_id"))
 	if err != nil {
 		handler.SendError(c, 400, "删回复失败.")
+		log.SetFlags(log.Llongfile | log.LstdFlags)
+		log.Println(err)
 		return
 	}
 	handler.SendResponse(c, "删回复成功.", nil)

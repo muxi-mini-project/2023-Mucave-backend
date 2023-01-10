@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func IsMyPost(userId interface{}, postId interface{}) bool {
+func IsMyPost(userId uint, postId string) bool {
 	posts, _ := model.QueryOneUserPosts(userId)
 	for _, post := range posts {
 		if strconv.Itoa(int(post.ID)) == postId {
@@ -15,7 +15,7 @@ func IsMyPost(userId interface{}, postId interface{}) bool {
 	return false
 }
 
-func IsMyComment(userId interface{}, commentId interface{}) bool {
+func IsMyComment(userId uint, commentId string) bool {
 	comments, _ := model.QueryMyComments(userId)
 	for _, comment := range comments {
 		if strconv.Itoa(int(comment.ID)) == commentId {
@@ -26,7 +26,7 @@ func IsMyComment(userId interface{}, commentId interface{}) bool {
 
 }
 
-func IsMyReply(userId interface{}, replyId interface{}) bool {
+func IsMyReply(userId uint, replyId string) bool {
 	replies, _ := model.QueryMyReplies(userId)
 	for _, reply := range replies {
 		if strconv.Itoa(int(reply.ID)) == replyId {

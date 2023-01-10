@@ -23,12 +23,6 @@ func Register(r *gin.Engine) {
 		u.GET("/all_private_msg", user.AllPrivateMsg)   //刷新所有给我的私信
 		u.POST("/private_msg/:id", user.PrivateMsgSend) //给某人发信息
 		u.PUT("/my_msg", user.MyMsgUpdate)              //更新我的资料
-
-		u.GET("/my_outline", user.Outline)              //我的大致信息
-		u.GET("/my_post", user.MyPost)                  //我的帖子
-		u.GET("/my_following", user.Following)          //我的关注
-		u.GET("/my_followers", user.Followers)          //我的粉丝
-		u.GET("/my_msg", user.MyMsg)                    //我的详细信息，在编辑页面
 		u.GET("/my_replies", user.MyReplies)            //我的回复
 		u.GET("/my_comments", user.MyComments)          //我的评论
 		u.GET("/my_likes", user.MyLikesPost)            //我的点赞
@@ -36,11 +30,11 @@ func Register(r *gin.Engine) {
 		u.GET("/replies", user.RepliesToMe)             //刷新回复评论我的消息通知
 
 		u.GET("/whether_follow", user.WhetherFollow)     //他人是否被我关注
-		u.GET("/:id/user_outline", user.UserOutline)     //他人的大致信息
-		u.GET("/:id/user_post", user.UserPost)           //他人的帖子
-		u.GET("/:id/user_followers", user.UserFollowers) //他人的粉丝
-		u.GET("/:id/user_following", user.UserFollowing) //他人的关注
-		u.GET("/:id/user_msg", user.UserMsg)             //他人的详细信息，只读
+		u.GET("/:id/user_outline", user.UserOutline)     //他人的大致信息 1
+		u.GET("/:id/user_post", user.UserPost)           //他人的帖子 1
+		u.GET("/:id/user_followers", user.UserFollowers) //他人的粉丝 1
+		u.GET("/:id/user_following", user.UserFollowing) //他人的关注 1
+		u.GET("/:id/user_msg", user.UserMsg)             //他人的详细信息，只读 1
 	}
 	p := r.Group("/api/v1/post")
 	p.Use(Midware.TokenMiddleWare)
