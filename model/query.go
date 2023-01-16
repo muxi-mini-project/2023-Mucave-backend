@@ -1,20 +1,13 @@
 package model
 
-import "strconv"
-
-func Atoi(i interface{}) int {
-	s, _ := i.(string)
-	a, _ := strconv.Atoi(s)
-	return a
-}
-func QueryNewPosts(start interface{}, length interface{}) ([]Post, error) {
+func QueryNewPosts(start int, length int) ([]Post, error) {
 	var posts []Post
-	err := DB.Model(&Post{}).Order("id desc").Offset(Atoi(start)).Limit(Atoi(length)).Find(&posts).Error
+	err := DB.Model(&Post{}).Order("id desc").Offset(start).Limit(length).Find(&posts).Error
 	return posts, err
 }
-func QueryHotPosts(startIndex interface{}, length interface{}, ty string, startTime interface{}, endTime interface{}) ([]Post, error) {
+func QueryHotPosts(startIndex int, length int, ty string, startTime string, endTime string) ([]Post, error) {
 	var posts []Post
-	err := DB.Model(&Post{}).Where("type=? && created_at between ? AND ?", ty, startTime, endTime).Order("likes desc").Offset(Atoi(startIndex)).Limit(Atoi(length)).Find(&posts).Error
+	err := DB.Model(&Post{}).Where("type=? && created_at between ? AND ?", ty, startTime, endTime).Order("likes desc").Offset(startIndex).Limit(length).Find(&posts).Error
 	return posts, err
 }
 func QueryId(username string) (uint, error) {
@@ -41,7 +34,7 @@ func QueryUserPosts(users []User) ([]Post, error) {
 	err := DB.Where("author_id in (?)", ids).Order("id desc").Find(&posts).Error
 	return posts, err
 }
-func QueryIdPost(id interface{}) (Post, error) {
+func QueryIdPost(id string) (Post, error) {
 	var post Post
 	err := DB.Where("id = ?", id).Take(&post).Error
 	return post, err
@@ -62,7 +55,7 @@ func QueryCommentByPostId(id string, my bool) ([]Comment, error) {
 	return comments, err
 }
 
-func QueryReplyByCommentId(commentId string, myId interface{}) ([]Reply, error) {
+func QueryReplyByCommentId(commentId string, myId uint) ([]Reply, error) {
 	var replies []Reply
 	err := DB.Where("comment_id = ? AND private = 0 || object = ?", commentId, myId).Order("created_at desc").Find(&replies).Error
 	return replies, err
@@ -90,10 +83,10 @@ func QueryOutline(id interface{}) Outline {
 	}
 	return outline
 }
-func QueryPrivateMsg(sender interface{}, receiver interface{}) ([]PrivateMsg, error) {
+func QueryPrivateMsg(sender string, receiver uint) ([]PrivateMsg, error) {
 	var privateMsgs []PrivateMsg
 	var err1 error
-	if s, _ := sender.(string); s == "all" {
+	if sender == "all" {
 		err1 = DB.Model(&PrivateMsg{}).Where("receiver_id=? AND status=1", receiver).Find(&privateMsgs).Error
 	} else {
 		err1 = DB.Model(&PrivateMsg{}).Where("sender_id=? AND receiver_id=? AND status=1", sender, receiver).Find(&privateMsgs).Error
@@ -126,7 +119,7 @@ func QueryMyLikesPosts(id interface{}) ([]Post, error) {
 	err := DB.Model(&Post{}).Omit("likes.id,likes.created_at,likes.updated_at,likes.deleted_at,likes.post_id,likes.user_id").Joins("join likes on likes.post_id=posts.id").Where("likes.user_id=?", id).Find(&posts).Error
 	return posts, err
 }
-func WhetherLike(userId interface{}, postId interface{}) bool {
+func WhetherLike(userId interface{}, postId string) bool {
 	var likes Likes
 	err := DB.Where("user_id=? AND post_id=?", userId, postId).Take(&likes).Error
 	if err != nil {
@@ -134,7 +127,7 @@ func WhetherLike(userId interface{}, postId interface{}) bool {
 	}
 	return true
 }
-func WhetherFollow(userId interface{}, myId interface{}) bool {
+func WhetherFollow(userId string, myId uint) bool {
 	var relationship Relationship
 	err := DB.Where("followed_id = ? AND follower_id = ?", userId, myId).Take(&relationship).Error
 	if err != nil {
@@ -142,10 +135,9 @@ func WhetherFollow(userId interface{}, myId interface{}) bool {
 	}
 	return true
 }
-func SearchPosts(point interface{}) ([]Post, error) {
+func SearchPosts(point string) ([]Post, error) {
 	var posts []Post
-	p, _ := point.(string)
-	err := DB.Where("title like ?", "%"+p+"%").Order("likes desc").Find(&posts).Error
+	err := DB.Where("title like ?", "%"+point+"%").Order("likes desc").Find(&posts).Error
 	return posts, err
 }
 func QueryOneUserPosts(userId interface{}) ([]Post, error) {
@@ -174,7 +166,7 @@ func QueryCommentSend(myPosts []Post) ([]Comment, error) {
 	return comments, err
 }
 
-func QueryRepliesSend(myPosts []Post, myId interface{}) ([]Reply, error) {
+func QueryRepliesSend(myPosts []Post, myId uint) ([]Reply, error) {
 	var postIds []uint
 	for _, post := range myPosts {
 		postIds = append(postIds, post.ID)

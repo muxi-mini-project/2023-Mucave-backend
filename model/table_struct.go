@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -12,7 +12,7 @@ type User struct {
 	Gender     string `form:"gender" json:"gender"`
 	Signature  string `form:"signature" json:"signature"`
 	AvatarPath string `form:"avatar_path" json:"avatar_path"`
-	Birthday   time.Time
+	Birthday   string `form:"birthday" json:"birthday"`
 	Hometown   string `form:"hometown" json:"hometown"`
 	Grader     string `form:"grader" json:"grader"`
 	Faculties  string `form:"faculties" json:"faculties"`

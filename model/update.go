@@ -1,11 +1,11 @@
 package model
 
-func UpdateUserMsg(user User, userId interface{}) error {
+func UpdateUserMsg(user User, userId uint) error {
 	err := DB.Model(&User{}).Where("id=?", userId).Updates(user).Error
 	//User{Name: user.Name, Gender: user.Gender, Signature: user.Signature, Birthday: user.Birthday, Hometown: user.Hometown, Grader: user.Grader, Faculties: user.Faculties}
 	return err
 }
-func UpdatePost(file string, post Post, posId interface{}) error {
+func UpdatePost(file string, post Post, posId string) error {
 	var err error
 	if file == "yes" {
 		err = DB.Model(&Post{}).Where("id = ?", posId).Updates(post).Error
@@ -15,7 +15,7 @@ func UpdatePost(file string, post Post, posId interface{}) error {
 	}
 	return err
 }
-func UpdateAvatar(id interface{}, avatarPath interface{}) error {
+func UpdateAvatar(id uint, avatarPath string) error {
 	err := DB.Model(&User{}).Where("id = ?", id).Update("avatar_path", avatarPath).Error
 	return err
 }
